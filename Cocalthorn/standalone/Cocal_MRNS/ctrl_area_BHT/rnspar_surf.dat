@@ -1,0 +1,22 @@
+   64    n    0    1    0         : nrg_1, sw_L1_iter, sw_sepa, sw_mass, sw_spin
+  1.000000000000000E-00           : rsurf
+  3.050000000000000E+01           : target separation/omega in G=c=Msol=1
+  1.500000000000000E-00           : target rest mass or Madm or compactness
+  1.106595626897675E-01           : target Sx
+  1.106595626897675E-01           : target Sy
+  1.106595626897675E-01           : target Sz
+
+sw_sepa: 0 => No iteration over distance
+sw_sepa: 1 => Iterate over r_surf to find target separation between two NSs.
+sw_sepa: 2 => Iterate over r_surf to find target Omega of the binary.
+========================================================================================================
+sw_mass: 0 => No iteration over density
+sw_mass: 1 => Iteration over one density to find one rest-mass (equal mass)
+sw_mass: 2 => Iteration over two densities to find two rest-masses (nonequal mass)
+sw_mass: 3 => Iteration over one density to find the total Madm mass (equal mass)
+sw_mass: 4 => Iteration over two densities to find total Madm mass and rest-mass ratio (nonequal mass)
+sw_mass: 5 => Iteration over one density to find one compactness (equal mass)
+========================================================================================================
+sw_spin: 0 => No iteration over spin
+sw_spin: 1 => Iteration to find Sx, Sy, Sz
+

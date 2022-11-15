@@ -1,0 +1,4 @@
+  300  300  300   30      :  nx,  ny,  nz, nstar
+   contour                :  chpr = contour, initial
+  100  100  100           :  nx0, ny0, nz0
+  1.000d+00  1.000d+00    :  facco, haba

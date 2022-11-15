@@ -1,0 +1,4 @@
+sed 's/ABC/abc/' sample.txt > output.txt
+sed -i 's/ABC/abc/' sample.txt    (overwrite)
+sed 's/ABC/abc/g' sample.txt > output.txt
+sed -i "s!restmass_val!${rest_mass}!" rnspar.dat   (for variable)

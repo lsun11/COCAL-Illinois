@@ -1,0 +1,8 @@
+  400   16  8.3102833E+00        : nstep, ndiv, radiini
+    0    1  0.1700000d-00        : itype, iter_mode, chope
+
+itype = 0  iteration for compactness, or mass
+itype = 1  single structure
+iter_mode = 0  iteration for compactness
+iter_mode = 1  iteration for rest mass
+iter_mode = 2  iteration for gravitational mass

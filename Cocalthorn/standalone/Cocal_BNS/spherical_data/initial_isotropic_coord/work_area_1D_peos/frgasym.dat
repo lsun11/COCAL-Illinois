@@ -1,0 +1,9 @@
+  100   20                    : nrg, nrf
+   50   1.0d-02   1.0d+04     : nrout, dr0, rvout
+  100   1.0d-05   0.1d+00     : itmx, eps, convini
+   0.2d-00   0.2d-00          : ffgra,ffden
+    0    0    0   cccc        : itype, iwrite, iddd, chrot, chbhs, chgra, chope
+    1                         : numseq
+   1.46141E-01   1.46141E-01  : restmass, gravmass
+ 1.165E-01   1.0d+00          : emdc, pinx
+ 1.000e-03   3.0e-05          : emddiff, rmeps

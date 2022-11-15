@@ -1,0 +1,148 @@
+subroutine hydro_irbin_vep_WL_peos(vep)
+  use phys_constant, only  : long
+  use grid_parameter, only : nrf, ntf, npf
+  use def_metric, only : alph, psi
+  use def_metric_hij, only : hxxd, hxyd, hxzd, hyyd, hyzd, hzzd
+  use flgrad
+  use make_array_3d
+  use interface_interpo_gr2fl
+  implicit none
+  real(long), pointer :: emd(:,:,:)
+  real(long), pointer :: alphf(:,:,:), psif(:,:,:) 
+  real(long), pointer :: hxxdf(:,:,:), hxydf(:,:,:), hxzdf(:,:,:), &
+  &                      hyydf(:,:,:), hyzdf(:,:,:), hzzdf(:,:,:)
+  real(long) :: hh, ut, pre, rho, ene, qq
+  real(long) :: psic, alphc, lamc
+  real(long) :: gamxxu, gamxyu, gamxzu, gamyxu, gamyyu, gamyzu, &
+  &             gamzxu, gamzyu, gamzzu
+  real(long) :: dxvp, dyvp, dzvp
+  integer    :: ir, it, ip
+!
+  call alloc_array3d(psif, 0, nrf, 0, ntf, 0, npf)
+  call alloc_array3d(alphf, 0, nrf, 0, ntf, 0, npf)
+  call alloc_array3d(hxxdf, 0, nrf, 0, ntf, 0, npf)
+  call alloc_array3d(hxydf, 0, nrf, 0, ntf, 0, npf)
+  call alloc_array3d(hxzdf, 0, nrf, 0, ntf, 0, npf)
+  call alloc_array3d(hyydf, 0, nrf, 0, ntf, 0, npf)
+  call alloc_array3d(hyzdf, 0, nrf, 0, ntf, 0, npf)
+  call alloc_array3d(hzzdf, 0, nrf, 0, ntf, 0, npf)
+!
+  call interpo_gr2fl(alph, alphf)
+  call interpo_gr2fl(psi, psif)
+  call interpo_gr2fl(hxxd, hxxdf)
+  call interpo_gr2fl(hxyd, hxydf)
+  call interpo_gr2fl(hxzd, hxzdf)
+  call interpo_gr2fl(hyyd, hyydf)
+  call interpo_gr2fl(hyzd, hyzdf)
+  call interpo_gr2fl(hzzd, hzzdf)
+!
+
+  do ip = 0, np
+    do it = 0, nt
+      do ir = 1, nr
+        psifc  = psif(ir,it,ip)
+        alphfc = alphf(ir,it,ip)
+        emdfc  = emd(ir,it,ip)
+        call peos_q2hprhoab(emdfc, hhfc, prefc, rhofc, enefc, abin, abct)
+        lamfc  = lambda(ir,it,ip)
+        hut(ir,it,ip) = hhfc*utf(ir,it,ip)
+        hutp6(ir,it,ip) = hut(ir,it,ip)*psifc**6
+        aloh(ir,it,ip) = dlog(alphfc/hhfc)
+        pinx_peos(ir,it,ip) = 1.0d0/(abin-1.0d0)
+      end do
+    end do
+  end do
+!
+  call flgrad(psif,gradps,2)
+  call flgrad(hutp6,gradhu,2)
+  call flgrad(aloh,gradah,2)
+  call flgrad(emd,grade,2)
+!
+! =================================
+!     Equation of continuity.
+!     Homogeneous solution.
+! =================================
+! ----
+!     Source term.                                                             
+! ----
+  surp(:,:) = 0.0d0
+  souv(:,:,:) = 0.0d0
+  vpot(:,:,:) = 0.0d0
+  do ip = 0, npf
+    do it = 0, ntf
+      do ir = 0, nrf - 1
+!
+      hhxxu = hxxuf(ir,it,ip)
+      hhxyu = hxyuf(ir,it,ip)
+      hhxzu = hxzuf(ir,it,ip)
+      hhyyu = hyyuf(ir,it,ip)
+      hhyzu = hyzuf(ir,it,ip)
+      hhzzu = hzzuf(ir,it,ip)
+      hhyxu = hhxyu
+      hhzxu = hhxzu
+      hhzyu = hhyzu
+      gamxxu = hhxxu + 1.0d0
+      gamxyu = hhxyu
+      gamxzu = hhxzu
+      gamyyu = hhyyu + 1.0d0
+      gamyzu = hhyzu
+      gamzzu = hhzzu + 1.0d0
+      gamyxu = gamxyu
+      gamzxu = gamxzu
+      gamzyu = gamyzu
+      rotshx = bvxuf(ir,it,ip) + ome*vec_phif(ir,it,ip,1)
+      rotshy = bvyuf(ir,it,ip) + ome*vec_phif(ir,it,ip,2)
+      rotshz = bvzuf(ir,it,ip) + ome*vec_phif(ir,it,ip,3)
+      gcx = gmcrixf(ir,it,ip)
+      gcy = gmcriyf(ir,it,ip)
+      gcz = gmcrizf(ir,it,ip)
+!
+      dxpsi = gradps(ir,it,ip,1)
+      dypsi = gradps(ir,it,ip,2)
+      dzpsi = gradps(ir,it,ip,3)
+      pfinv = 1.0d0/psif(ir,it,ip)
+      pf2inv = pfinv**2
+      pf4 = psif(ir,it,ip)**4
+      dxvpd = grad_vep(ir,it,ip,1)
+      dyvpd = grad_vep(ir,it,ip,2)
+      dzvpd = grad_vep(ir,it,ip,3)
+      dxvpu = gamxxu*dxvpd + gamxyu*dyvpd + gamxzu*dzvpd
+      dyvpu = gamyxu*dxvpd + gamyyu*dyvpd + gamyzu*dzvpd
+      dzvpu = gamzxu*dxvpd + gamzyu*dyvpd + gamzzu*dzvpd
+      hhut = hut(ir,it,ip)
+      dxhutp6 = gradhu(ir,it,ip,1)
+      dyhutp6 = gradhu(ir,it,ip,2)
+      dzhutp6 = gradhu(ir,it,ip,3)
+      pind = pinx_peos(ir,it,ip)
+      dxlnarh = gradah(ir,it,ip,1)+pind*grade(ir,it,ip,1)/emd(ir,it,ip)
+      dylnarh = gradah(ir,it,ip,2)+pind*grade(ir,it,ip,2)/emd(ir,it,ip)
+      dzlnarh = gradah(ir,it,ip,3)+pind*grade(ir,it,ip,3)/emd(ir,it,ip)
+      divbvf = cdvbvf(ir,it,ip)
+!
+      call dadbscalarf(vep,dabvep,ir,it,ip)
+!
+      souv(ir,it,ip) =
+     &  -(hhxxu*dabvep(1,1) + hhxyu*dabvep(1,2) + hhxzu*dabvep(1,3)
+     &  + hhyxu*dabvep(2,1) + hhyyu*dabvep(2,2) + hhyzu*dabvep(2,3)
+     &  + hhzxu*dabvep(3,1) + hhzyu*dabvep(3,2) + hhzzu*dabvep(3,3))
+     &  + gcx*dxvpd + gcy*dyvpd + gcz*dzvpd
+     &  - 2.0d0*pfinv*(dxvpu*dxpsi + dyvpu*dypsi + dzvpu*dzpsi)
+     &  + pf2inv*(rotshx*dxhutp6 + rotshy*dyhutp6 + rotshz*dzhutp6)
+     &  + pf4*hhut*divbvf
+     &  -(dxvpu - pf4*hhut*rotshx)*dxlnarh
+     &  -(dyvpu - pf4*hhut*rotshy)*dylnarh
+     &  -(dzvpu - pf4*hhut*rotshz)*dzlnarh
+!
+      end do
+    end do
+  end do
+!
+  deallocate(alphf)
+  deallocate(psif)
+  deallocate(hxxdf)
+  deallocate(hxydf)
+  deallocate(hxzdf)
+  deallocate(hyydf)
+  deallocate(hyzdf)
+  deallocate(hzzdf)
+end subroutine hydro_irbin_vep_WL_peos

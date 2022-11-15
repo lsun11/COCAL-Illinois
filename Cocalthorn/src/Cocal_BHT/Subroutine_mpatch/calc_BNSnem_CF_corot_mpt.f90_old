@@ -1,0 +1,291 @@
+subroutine calc_BNSnem_CF_corot_mpt(total_iteration, sw_itq)
+  use phys_constant, only  : long, nmpt, solmas, g,c
+  use grid_parameter
+  use grid_parameter_mpt
+  use def_quantities
+  use def_iter_quantities
+  use def_matter_parameter
+  use def_matter_parameter_mpt
+  use def_binary_parameter_mpt
+  use interface_violation_gridpoint_MoC_CF_peos_corot
+  use interface_violation_gridpoint_HaC_CF_peos_corot
+  use interface_IO_output_3D_general
+  use interface_IO_output_2D_general
+  use interface_IO_output_1D_general
+  use interface_msec_copy_BNS_iterqt_to_mpt
+  use interface_msec_copy_BNS_iterqt_from_mpt
+  use interface_msec_store_BNS_fval_mpt
+  use interface_length_conversion
+  use make_array_1d
+  use make_array_2d
+  use make_array_3d
+  use make_array_4d
+  use interface_minv
+  implicit none
+  real(long), pointer :: pot(:,:,:), HaC_vio(:,:,:), MoC_vio(:,:,:,:)
+  real(long) :: delta, iter_eps, cf, edis
+  integer :: total_iteration, iter_count, ii, i, j, k, istep, Nmax=30
+  integer :: niq, impt, im,id,is
+  character(30) :: char1, char2, char3, char4, char5
+  real(long), pointer :: jacobian_at_x_old(:,:), msec_ff(:,:)
+  real(long), pointer :: rhs_at_x_old(:), msec_dx(:), msec_x_der(:), msec_f_der(:)
+
+  real(long) :: bsepa, bd
+
+! 010, 020, 030 : Iteration over rho to find target_qt={M0, Madm, compa}
+! 110, 120, 130 : Iteration over rsurf and rho to find distance and target_qt={M0, Madm, compa}
+! 210, 220, 230 : Iteration over rsurf and rho to find angular velocity and target_qt={M0, Madm, compa}
+! 001           : Iteration over ome1, ome2, ome3 to find target spin.
+! 011, 021, 031 : Iteration over rho and ome1, ome2, ome3 to find target_qt={M0, Madm, compa}
+!                 and target spin.
+! 111, 121, 131 : Iteration over rsurf, rho and ome1, ome2, ome3 to find distance and 
+!                 target_qt={M0, Madm, compa} and target spin. 
+! 211, 221, 231 : Iteration over rsurf, rho and ome1, ome2, ome3 to find angular velocity and 
+!                 target_qt={M0, Madm, compa} and target spin. 
+ 
+  niq = 1
+  if( sq_itq.eq."010".or.sq_itq.eq."020".or.sq_itq.eq."030")   niq = 1
+
+  if( sq_itq.eq."110".or.sq_itq.eq."120".or.sq_itq.eq."130".or. &
+   &  sq_itq.eq."210".or.sq_itq.eq."220".or.sq_itq.eq."230")   niq = 2
+
+  if( sw_itq.eq."001")                                         niq = 3
+
+  if( sq_itq.eq."011".or.sq_itq.eq."021".or.sq_itq.eq."031")   niq = 4
+
+  if( sq_itq.eq."111".or.sq_itq.eq."121".or.sq_itq.eq."131".or. &
+   &  sq_itq.eq."211".or.sq_itq.eq."221".or.sq_itq.eq."231")   niq = 5
+
+  call alloc_array1d(msec_x_oold,1,niq)
+  call alloc_array1d(msec_x_old ,1,niq)
+  call alloc_array1d(msec_f_oold,1,niq)
+  call alloc_array1d(msec_f_old ,1,niq)
+
+  call alloc_array2d(jacobian_at_x_old,1,niq+1,1,niq+1)
+  call alloc_array2d(msec_ff          ,1,niq  ,1,niq)
+  call alloc_array1d(rhs_at_x_old,1,niq)
+  call alloc_array1d(msec_dx     ,1,niq)
+  call alloc_array1d(msec_x_der  ,1,niq)
+  call alloc_array1d(msec_f_der  ,1,niq)
+
+  delta = 1.0d-7
+  total_iteration = 0
+  char1 = 'bnsphys_mpt1.txt'
+  char2 = 'bnsphys_mpt2.txt'
+  char3 = 'main_bnsphys_all_mpt.txt'
+!
+  if(id.eq.1) then
+    call length_conversion(2, surf_param_real_(2,1), bd)    !Target distance in km: surf_param_real_(2,1) 
+    bsepa   = sepa_(1)
+    write(6,'(a41,1p,e23.15)') "Binary separation in COCAL units        :", bsepa
+    write(6,'(a41,1p,e23.15)') "Target binary separation in km          :", surf_param_real_(2,1)
+    write(6,'(a41,1p,e23.15)') "Target binary separation in COCAL units :", bd
+  end if
+stop
+
+
+  istep = 0
+  call msec_copy_BNS_iterqt_from_mpt(msec_x_oold,id,is)  ! Initializes msec_x_oold
+  write(6,'(a13,i5,1p,10e20.12)')  'First point: ', istep, (msec_x_oold(i),i=1,niq)
+  if (niq.eq.1) then
+    call open_directory_mpt(0)
+    iter_eps = 1.0d0
+    call iter_corot_BNS_CF_mpt(iter_count,1,iter_eps)         !  1 for freezing hydro in first 5 iterations
+    total_iteration = total_iteration + iter_count
+    write(6,'(a21,i5)') '--- total iteration =', total_iteration
+    call calc_physical_quantities_BNS_CF_mpt   
+    call msec_store_BNS_fval_mpt(msec_f_oold,im,id,is)         ! Initializes msec_f_oold
+
+    call printout_iterqt_BNS_mpt(msec_x_oold,msec_f_oold,im,id,is)
+
+    call write_last_physq_BNS_mpt
+    call printout_physq_BNS_plot_mpt(char1,1)
+    call printout_physq_BNS_plot_mpt(char2,2)
+    call printout_physq_BNS_all_mpt(char3)
+!    call copy_def_matter_parameter_from_mpt(1)
+!    xa = emdc
+!    call copy_def_quantities_from_mpt(1)
+!    fa = (restmass - restmass_sph)/restmass_sph
+!    write(6,*)  "xa,fa=", xa, fa,  "           restmass, restmass_sph = ", restmass, restmass_sph
+    call chdir('../')
+  endif
+!
+  do i=1,niq
+    msec_x_old(i) = msec_x_oold(i) - 0.01*msec_x_oold(i)
+  end do
+  call msec_copy_BNS_iterqt_to_mpt(msec_x_old,id,is)
+!
+  istep = 1
+  write(6,'(a14,i5,1p,10e20.12)')  'Second point: ', istep, (msec_x_old(i),i=1,niq)
+  call open_directory_mpt(1)
+!  xb = xa - 0.01d0*xa
+!  do impt = 1, 2
+!    call copy_def_matter_parameter_from_mpt(impt)
+!    emdc = xb
+!    call copy_def_matter_parameter_to_mpt(impt)
+!  end do
+!  write(6,'(a14,1p,2e20.12)')  "emdc COCP1,2: ", def_matter_param_real_(2,1), def_matter_param_real_(2,2)
+  iter_eps = 1.0d0
+  call iter_corot_BNS_CF_mpt(iter_count,1,iter_eps)     !  1 for freezing hydro in first 5 iterations
+  total_iteration = total_iteration + iter_count
+  write(6,'(a21,i5)') '--- total iteration =', total_iteration
+  call calc_physical_quantities_BNS_CF_mpt   
+  call msec_store_BNS_fval_mpt(msec_f_old,im,id,is)
+  call write_last_physq_BNS_mpt
+  call printout_physq_BNS_plot_mpt(char1,1)
+  call printout_physq_BNS_plot_mpt(char2,2)
+  call printout_physq_BNS_all_mpt(char3)
+!  call copy_def_matter_parameter_from_mpt(1)
+!  xa = emdc
+!  call copy_def_quantities_from_mpt(1)
+!  fa = (restmass - restmass_sph)/restmass_sph
+!  write(6,*)  "xa,fa=", xa, fa,  "           restmass, restmass_sph = ", restmass, restmass_sph
+  call chdir('../')
+
+  do ii = 2,Nmax
+    istep = istep+1
+    if (niq > 1) then
+      do i=1,niq
+        msec_dx(i) = msec_x_oold(i) - msec_x_old(i)  ! x_{n-1}-x_n
+        msec_x_der(1:niq) = msec_x_old(1:niq)
+        msec_x_der(i) = msec_x_oold(i)        ! off diagonal point used for the calc of derivative
+        call msec_copy_BNS_iterqt_to_mpt(msec_x_der,id,is)
+!
+        write(6,'(a11,i5,i5,1p,10e20.12)') 'Add point: ', istep, i, (msec_x_der(j),j=1,niq)
+        iter_eps = 1.0d-06
+        call iter_corot_BNS_CF_mpt(iter_count,1,iter_eps)        !  1 for freezing hydro in first 5 iterations
+        total_iteration = total_iteration + iter_count
+        write(6,'(a21,i5)') '--- total iteration =', total_iteration
+        call calc_physical_quantities_BNS_CF_mpt
+        call msec_store_BNS_fval_mpt(msec_f_der,im,id,is)         ! Initializes msec_f_der
+        call write_last_physq_BNS_mpt
+        call printout_physq_BNS_plot_mpt(char1,1)
+        call printout_physq_BNS_plot_mpt(char2,2)
+        call printout_physq_BNS_all_mpt(char3)
+        write(6,*) '************************************************************************************************'
+!
+        msec_ff(1:niq,i) = msec_f_der(1:niq)
+      end do
+    else
+      msec_dx(1)   = msec_x_oold(1) - msec_x_old(1)
+      msec_ff(1,1) = msec_f_oold(1)
+    endif
+!   computation of Jacobian at point x1 i.e Xold
+    do i=1,niq
+      do j=1,niq
+        jacobian_at_x_old(i,j) = (msec_ff(i,j) - msec_f_old(i))/msec_dx(j)
+      end do
+    end do
+!   computation of the RHS: A*x_n - F_n
+    do j=1,niq
+      rhs_at_x_old(j) = 0.0d0
+      do k=1,niq
+        rhs_at_x_old(j) = rhs_at_x_old(j) + jacobian_at_x_old(j,k)*msec_x_old(k)
+      end do
+      rhs_at_x_old(j) = rhs_at_x_old(j) - msec_f_old(j)
+    end do
+!
+    call minv(jacobian_at_x_old, rhs_at_x_old, niq, niq+1)  ! at the end B=Xnew
+!
+    msec_x_oold(1:niq) = msec_x_old(1:niq)
+    msec_f_oold(1:niq) = msec_f_old(1:niq)   ! this is not necessary actually. msec_f_oold is not needed any more 
+
+!   the newly calculated point
+    if (ii.lt.10) then
+      cf = dble(ii)/10.0d0
+      msec_x_old(1:niq) = cf*rhs_at_x_old(1:niq) + (1.0d0-cf)*msec_x_oold(1:niq)
+    else
+      msec_x_old(1:niq) = rhs_at_x_old(1:niq) 
+    end if
+    call msec_copy_BNS_iterqt_to_mpt(msec_x_old,id,is)
+
+    write(6,'(a11,i5,1p,10e20.12)')  'New point: ', istep, (msec_x_old(i),i=1,niq)
+    call open_directory_mpt(istep)
+    iter_eps = 1.0d-06
+    call iter_corot_BNS_CF_mpt(iter_count,1,iter_eps)        !  1 for freezing hydro in first 5 iterations
+    total_iteration = total_iteration + iter_count
+    write(6,'(a21,i5)') '--- total iteration =', total_iteration
+    call calc_physical_quantities_BNS_CF_mpt
+    call msec_store_BNS_fval_mpt(msec_f_old,im,id,is)         ! Initializes msec_f_old
+    call write_last_physq_BNS_mpt
+    call printout_physq_BNS_plot_mpt(char1,1)
+    call printout_physq_BNS_plot_mpt(char2,2)
+    call printout_physq_BNS_all_mpt(char3)
+    call chdir('../')
+    write(6,*) '************************************************************************************************'
+
+!   check the distance between msec_x_oold and msec_x_old
+    edis = 0
+    do i=1,niq
+      edis = edis + (msec_x_oold(i) - msec_x_old(i))*(msec_x_oold(i) - msec_x_old(i))
+    end do
+    edis = sqrt(edis)
+    if (edis < delta) then
+      write(6,*) '================================================================================================'
+      write(6,'(a13,i5,1p,10e20.12)') 'Convergence: ', istep, (msec_x_old(i),i=1,niq)
+      exit
+    end if
+  end do
+  if (istep.eq.Nmax) then
+    if (edis.lt.delta)  then
+      write(6,*) 'Convergence after ',istep-1,' iterations.'
+    else
+      write(6,*) 'No convergence after ',Nmax-1,' iterations.'
+    endif
+  else
+     write(6,*) 'Convergence after ',istep-1,' iterations.'
+  endif
+ 
+  write(6,*) 'Deallocating jacobian_at_x_old, msec_ff, rhs_at_x_old, msec_dx, msec_x_der, msec_f_der.'
+  deallocate(jacobian_at_x_old, msec_ff, rhs_at_x_old, msec_dx, msec_x_der,msec_f_der)
+
+
+!========================================================================================================
+!========================================================================================================
+
+!     write(6,*) "Calculating constraint violations at gridpoints of COCP-1..."
+!     call copy_from_mpatch_all_BNS_CF(1)
+!     call copy_def_metric_and_matter_from_mpt(1)
+!     call alloc_array4d(MoC_vio,0,nrg,0,ntg,0,npg,1,3)
+!     call alloc_array3d(HaC_vio,0,nrg,0,ntg,0,npg)
+!     call alloc_array3d(pot,0,nrg,0,ntg,0,npg)
+!     call excurve_CF('ns')             !   3rd order midpoint from ir0=-2,...
+!     call excurve_CF_gridpoint         !   4th order from ir0=-2,...
+
+!     MoC_vio(0:nrg,0:ntg,0:npg,1:3) = 0.0d0
+!     call violation_gridpoint_MoC_CF_peos_corot(MoC_vio,'ns')
+!     pot = 0.0d0
+!     pot(0:nrg,0:ntg,0:npg) = MoC_vio(0:nrg,0:ntg,0:npg,2)
+!     char1 = 'MoC_by_3D_mpt1.txt'
+!     call IO_output_3D_general(char1,'g','g',pot)
+!     char1 = 'MoC_by_xy_mpt1.txt'
+!     call IO_output_2D_general(char1,'g','g',pot,'xy')
+!     char1 = 'MoC_by_phi000_mpt1.txt'
+!     call IO_output_1D_general(char1,'g','g',pot,-1,ntg/2,0)
+!     char1 = 'MoC_by_phi180_mpt1.txt'
+!     call IO_output_1D_general(char1,'g','g',pot,-1,ntg/2,npg/2)
+
+!     HaC_vio = 0.0d0
+!     call violation_gridpoint_HaC_CF_peos_corot(HaC_vio,'ns')
+!     char1 = 'HaC_3D_mpt1.txt'
+!     call IO_output_3D_general(char1,'g','g',HaC_vio)
+!     char1 = 'HaC_xy_mpt1.txt'
+!     call IO_output_2D_general(char1,'g','g',HaC_vio,'xy')
+!     char1 = 'HaC_phi000_mpt1.txt'
+!     call IO_output_1D_general(char1,'g','g',HaC_vio,-1,ntg/2,0)
+!     char1 = 'HaC_phi180_mpt1.txt'
+!     call IO_output_1D_general(char1,'g','g',HaC_vio,-1,ntg/2,npg/2)
+
+!     pot = 0.0d0
+!     call calc_soundspeed_peos(pot)
+!     char1 = 'c_s_phi000_mpt1.txt'
+!     call IO_output_1D_general(char1,'f','g',pot,-1,ntf/2,0)
+!     char1 = 'c_s_phi180_mpt1.txt'
+!     call IO_output_1D_general(char1,'f','g',pot,-1,ntf/2,npf/2)
+
+!     deallocate(MoC_vio)
+!     deallocate(HaC_vio)
+!     deallocate(pot)
+!     return
+
+end subroutine calc_BNSnem_CF_corot_mpt

@@ -1,0 +1,165 @@
+!!!
+!!! computing parameters by hydrostatic equation and definition of Omega
+!!!
+subroutine update_parameter_axisym_peos_drot(convf)
+  use phys_constant, only  : long
+  use grid_parameter, only : nrg, ntg, npg, nrf_deform, nrf, ntgxy
+  use def_metric, only : psi, alph, bvxd, bvyd, bvzd, tfkij, tfkijkij
+  use def_matter, only  : omef
+  use def_matter_parameter
+  use coordinate_grav_r, only : rg
+  use trigonometry_grav_theta, only : sinthg, costhg
+  use trigonometry_grav_phi, only   : sinphig, cosphig
+  use def_vector_phi, only : vec_phig
+  implicit none
+  real(long), intent(in) :: convf
+!
+  real(long)     ::    bin, bmid, bout
+! "bin" is beta(in) and so on.
+  real(long)     ::    ain, amid, aout
+! ain is log(\alpha^((1/R_i)^2)) (in). R_in is in fact the previous R.
+  real(long)     ::    pain, pamid, paout
+! pain = (\phi^2/\alpha)^((1/R_i)^2) (in).
+  real(long)     ::    ovin, ovmid, ovout, vphiyout
+! ovin is \omega(in). \omega = \beta + \Omega \phi.
+!>>
+  real(long) q0, omgE, xi, Fx, cf1, cf2, cf3, dFx_dxi, wE&
+       & ,Gx, cg1, cg2, dGx_dome
+! q0 = index_DR
+! omgE: omega(E) --- determined by N-R iteration
+! xi: omgE/ome
+! Fx: 'Def. of rotational profile' evalyated at E
+! dFx_dxi: D[Fx]/D[xi]
+! cf1, cf2, cf3: coefficients appearing in Fx
+! wE: womega/ome
+!
+! Gx: hydrostatic eq. evaluated at E
+! cg1, cg2: coefficients appearing in Gx
+! dGx_dome: D[Gx]/D[ome]
+!
+
+  real(long) err, rlx, err_omgE, err_ome
+  real(long), parameter:: tolNR = 1.00d-6
+!>>
+  real(long)     ::    loghc
+  real(long)     ::    hc, pre, rho, ene
+  integer        ::    nin
+!=====================================================================
+  nin = nrf_deform
+!
+  call peos_q2hprho(emdc, hc, pre, rho, ene)
+  loghc = dlog(hc)
+!  vphiyin  = vec_phig(nin,0,0,2)
+!  vphiymid = vec_phig(0,0,0,2)
+  vphiyout = vec_phig(nrf,ntgxy,0,2)
+!
+! ################################################################ 
+  ain  = dlog(alph(nin,0,0)**(1.d0/radi**2))
+  pain = (psi(nin,0,0)**2/alph(nin,0,0))**(1.d0/radi**2)
+  bin  = bvyd(nin,0,0)
+!
+  amid = dlog(alph(0,0,0)**(1.d0/radi**2))
+  pamid= (psi(0,0,0)**2/alph(0,0,0))**(1.d0/radi**2)
+  bmid = bvyd(0,0,0)
+!
+  aout = dlog(alph(nrf,ntgxy,0)**(1.d0/radi**2))
+  paout= (psi(nrf,ntgxy,0)**2/alph(nrf,ntgxy,0))**(1.d0/radi**2)
+  bout = bvyd(nrf,ntgxy,0)
+! write (6,*) "test values"
+! write (6,'(1p,3e12.4)') ome, ber, radi
+! write (6,'(1p,3e12.4)') psi(nin,0,0),psi(0,0,0),psi(nrf,ntgxy,0)
+! write (6,'(1p,3e12.4)') alph(nin,0,0),alph(0,0,0),alph(nrf,ntgxy,0)
+! write (6,'(1p,3e12.4)') error
+! write (6,'(1p,3e12.4)') pain, pamid, paout
+! ################################################################ 
+
+     ovin  = omef(nrf,0,0) ! bin=0 on the axis
+     ovmid = omef(0,0,0)   ! bmid=0 on the axis
+     ovout = bout/vphiyout + omef(nrf,ntgxy,0)
+!    ---> (Omega-womega) at the points P,O,E
+!     
+!>> [1] Using hydrostatc equation at P and O, compute
+!>>     'ber' and Rs.
+!
+     radi = sqrt(abs(loghc/(ain - amid)))
+     ber = exp(loghc * ain/(ain - amid))
+!
+!>> [2] Iteratively solve for omgE and ome
+!
+     xi = 0.90d0 ! initial guess for xi
+     q0 = index_DR
+     wE = (-bout)/ome
+!
+DO
+!     
+!>> [2-a] Solving 'Def. of rotatioal profile' at E 
+!>>     for omgE (=Omega(E)) by using Newton-Raphson
+!>>     iteration, when ome (=Omega_c) is given.
+!>> variable -- xi:= omgE/ome
+!
+!     omgE = omef(nrf,ntgxy,0) ! initial guess of omgE
+!     
+!x     do 
+        cf1 = A2DR*ome
+        cf3 = (paout)**(2.00d0*radi**2) * radi**2 * ome
+        cf2 = cf3 * ome
+!
+        Fx = -( cf1*(xi**(1.00d0-q0) - xi)&
+             &     *(1.00d0-cf2*(xi-wE)**2)&
+             & -cf3*(xi-wE) )
+        dFx_dxi = cf1*((1.00d0-q0)*xi**(-q0) - 1.00d0)&
+             &          *(1.00d0-cf2*(xi-wE)**2)&
+             & + cf1*(xi**(1.00d0-q0)-xi)&
+             &          *(-2.00d0*cf2*(xi-wE)) - cf3
+!
+        err_omgE = abs(Fx/dFx_dxi) / xi
+!x        if(err<tolNR)exit
+!     revising solution
+        rlx = 2.0d-1
+        if (err_omgE<1.0d0) rlx = 1.00d0
+        xi = xi + rlx*(Fx/dFx_dxi)
+!x     enddo
+!
+     omgE = xi * ome
+!     
+!>> [2-b] Solving 'hydrostatic eq.' at E 
+!>>     for ome (=Omega_c) by using Newton-Raphson
+!>>     iteration, when omgE (=Omega(E)) is given.
+!>> variable -- ome
+!
+     cg1 = ( paout**(radi**2) * radi * (xi-wE) )**2
+     if (q0==2.00d0) then
+        cg2 = log(xi) - 5.00d-1*(xi**2-1.00d0)
+     else
+        cg2 = (xi**(2.00d0-q0)-1.00d0)/(2.00d0-q0)&
+             & -5.00d-1*(xi**2-1.00d0)
+     endif
+     cg2 = cg2 * A2DR
+!
+!x     do
+        Gx = -( radi**2*aout &
+             & + 5.00d-1*log(abs(1.00d0-cg1*ome**2))&
+             & + cg2*ome**2 - log(ber) )
+        !
+        dGx_dome = cg1*ome/(cg1*ome**2-1.00d0) &
+             & + 2.00d0*cg2*ome
+        !
+        err_ome = abs(Gx/dGx_dome) / ome
+!x        if (err<tolNR) exit
+        !
+        rlx = 2.00d-1
+        if (err_ome<1.00d0) rlx = 1.00d0
+        !
+        ome = ome + rlx*(Gx/dGx_dome)
+        !   write(6,*)'err,ome',err,ome
+        !   pause
+!x     enddo
+!!!!!
+!--- total error
+     err = err_omgE + err_ome
+     if (err<tolNR) exit
+ENDDO
+!
+write(6,*)'ome, omgE:',ome, omgE
+!
+end subroutine update_parameter_axisym_peos_drot

@@ -1,0 +1,68 @@
+subroutine grgrad_midpoint_r3rd_type0_bh(fnc,dfdx,dfdy,dfdz,irg,itg,ipg)
+  use phys_constant, only : long
+  use grid_parameter, only : nrg, ntg, npg
+  use coordinate_grav_r, only : hrginv, drginv
+  use coordinate_grav_theta, only : dthginv
+  use coordinate_grav_phi, only : dphiginv
+  use coordinate_grav_extended, only : rgex, hrgex, irgex_r, itgex_r, ipgex_r
+  use trigonometry_grav_theta, only : hsinthg, hcosthg, hcosecthg
+  use trigonometry_grav_phi, only : hsinphig, hcosphig
+  implicit none
+  real(long), pointer :: fnc(:,:,:)
+  real(long) :: gr1, gr2, gr3, dfncdr, dfncdth, dfncdphi
+  real(long) :: dfdx, dfdy, dfdz, dfncdr_tp(0:1,0:1)
+  real(long) :: rv, r4(4), fr4(4)
+  integer    :: irg, itg, ipg, irgex, itgex, ipgex
+  integer    :: ir0, irg0, ii, ith, iph
+  real(long), external :: dfdx_3rd
+!
+! --- Compute the gradient of a function.
+! --- The gradient is evaluated at mid points.
+! --- r, theta, phi derivatives.
+!
+  ir0 = min0(max0(0,irg-2),nrg-3)
+!
+  do iph = 0, 1
+    do ith = 0, 1
+      do ii = 1, 4
+        irg0 = ir0 + ii - 1
+        r4(ii)= rgex(irg0)
+        irgex = irgex_r(irg0)
+        itgex = itgex_r(itg-1+ith,irg0)
+        ipgex = ipgex_r(ipg-1+iph,irg0)
+        fr4(ii) = fnc(irgex,itgex,ipgex)
+      end do
+      rv = hrgex(irg)
+      dfncdr_tp(ith,iph) = dfdx_3rd(r4,fr4,rv)
+    end do
+  end do
+!
+  dfncdr = 0.25d0 &
+  &      *(dfncdr_tp(1,1) + dfncdr_tp(0,1) &
+  &      + dfncdr_tp(1,0) + dfncdr_tp(0,0))
+  dfncdth = 0.25d0 &
+  &       *(fnc(irg  ,itg,ipg  ) - fnc(irg  ,itg-1,ipg  ) &
+  &       + fnc(irg-1,itg,ipg  ) - fnc(irg-1,itg-1,ipg  ) &
+  &       + fnc(irg  ,itg,ipg-1) - fnc(irg  ,itg-1,ipg-1) &
+  &       + fnc(irg-1,itg,ipg-1) - fnc(irg-1,itg-1,ipg-1))*dthginv
+  dfncdphi = 0.25d0 &
+  &        *(fnc(irg  ,itg  ,ipg) - fnc(irg  ,itg  ,ipg-1) &
+  &        + fnc(irg-1,itg  ,ipg) - fnc(irg-1,itg  ,ipg-1) &
+  &        + fnc(irg  ,itg-1,ipg) - fnc(irg  ,itg-1,ipg-1) &
+  &        + fnc(irg-1,itg-1,ipg) - fnc(irg-1,itg-1,ipg-1))*dphiginv
+!
+! --- To cartesian component.
+!
+  gr1  = dfncdr
+  gr2  = dfncdth*hrginv(irg)
+  gr3  = dfncdphi*hrginv(irg)*hcosecthg(itg)
+  dfdx = gr1 * hsinthg(itg) * hcosphig(ipg) &
+  &    + gr2 * hcosthg(itg) * hcosphig(ipg) &
+  &    - gr3 * hsinphig(ipg)
+  dfdy = gr1 * hsinthg(itg) * hsinphig(ipg) &
+  &    + gr2 * hcosthg(itg) * hsinphig(ipg) &
+  &    + gr3 * hcosphig(ipg)
+  dfdz = gr1 * hcosthg(itg)  &
+  &    - gr2 * hsinthg(itg)
+!
+end subroutine grgrad_midpoint_r3rd_type0_bh

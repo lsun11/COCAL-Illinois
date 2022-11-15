@@ -1,0 +1,65 @@
+subroutine calc_omega_drot(vphiy,alphw,psiw,bvydw,hyydw,omega,Jome,Jome_int)
+  use phys_constant, only  : long
+  use coordinate_grav_r, only : rg
+  use def_matter_parameter
+!  use def_vector_phi, only : vec_phi
+  implicit none
+  real(long), intent(in):: vphiy, alphw, psiw, bvydw, hyydw
+  real(long), intent(inout):: omega
+  real(long), intent(out):: Jome, Jome_int
+! -- Jome: functional of Omega (specific angular momentum in Newtonian)
+! -- Jome_int: integration of Jome w.r.t. omega
+!
+  real(long) :: p4a2, ovyu, ov2, ovphi, term1, term2, term3
+  real(long) :: dJomedo, dterm1do, dterm2do, dterm3do
+  real(long) :: omegaold, ddomega
+  real(long) :: facfac, error, small, smallome = 1.0d-30, pmfac
+  integer    :: numero
+!-------------------------------------------------------------
+! Assyme axisymmetry.  
+! Compute only on xz plane then copy to the other phi=const planes.
+!
+  call calc_omega_drot_bisection(vphiy,alphw,psiw,bvydw,hyydw,omega)
+!
+  p4a2 = psiw**4/alphw**2
+  ovyu = bvydw + omega*vphiy
+! This is in fact only the \omega^y component.
+!      ov2 = ovyu**2+ovxu**2+ovzu**2
+  ov2   = ovyu**2*(1.0d0 + hyydw)
+  ovphi = ovyu*vphiy*(1.0d0 + hyydw)
+  term1 = 1.0d0 - p4a2*ov2
+  term2 = p4a2*ovphi
+!
+  Jome = term2/term1
+  Jome_int = &
+  &     (-0.1414213562373095*A2DR*  &
+  &     (3.0575518754255118*A2DR**2 + 0.7217900873323894*B2DR**2)*  &
+  &     ome**2)/B2DR**2 + 0.05*A2DR*ome**2*  &
+  &   ((20.*A2DR**4*Jome**3*ome**2)/  &
+  &      (B2DR**2*(Jome**5 + A2DR**5*ome**5)) +   &
+  &     (20.*A2DR**4*Jome*ome**4)/(Jome**5 + A2DR**5*ome**5) +   &
+  &     (-7.608452130361228 + (4.702282018339785*A2DR**2)/B2DR**2)*  &
+  &      atan((0.2628655560595668*  &
+  &          (4.*Jome + 1.2360679774997898*A2DR*ome))/(A2DR*ome)) +   &
+  &     (4.702282018339785 + (7.608452130361228*A2DR**2)/B2DR**2)*  &
+  &      atan((0.42532540417601994*  &
+  &          (-4.*Jome + 3.23606797749979*A2DR*ome))/(A2DR*ome)) -   &
+  &     4.*Log(Jome + A2DR*ome) -   &
+  &     (4.*A2DR**2*Log(Jome + A2DR*ome))/B2DR**2 +   &
+  &     3.23606797749979*Log(Jome**2 -   &
+  &        1.618033988749895*A2DR*Jome*ome + A2DR**2*ome**2) -   &
+  &     (1.2360679774997898*A2DR**2*  &
+  &        Log(Jome**2 - 1.618033988749895*A2DR*Jome*ome +   &
+  &          A2DR**2*ome**2))/B2DR**2 -   &
+  &     1.2360679774997898*  &
+  &      Log(Jome**2 + 0.6180339887498949*A2DR*Jome*ome +   &
+  &        A2DR**2*ome**2) +   &
+  &     (3.23606797749979*A2DR**2*  &
+  &        Log(Jome**2 + 0.6180339887498949*A2DR*Jome*ome +   &
+  &          A2DR**2*ome**2))/B2DR**2)
+!
+!write(6,*)'omega   ', omega
+!write(6,*)'Jome    ', Jome
+!write(6,*)'Jome_int', Jome_int
+!
+end subroutine calc_omega_drot

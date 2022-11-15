@@ -1,0 +1,15 @@
+#! /bin/sh -f
+rm -i *~
+rm -i */*~
+rm -i */*/*~
+rm -i */*/*/*~
+rm -i */*/*/*/*~
+rm -i *.mod
+rm -i */*.mod
+rm -i */*/*.mod
+rm -i */*/*/*.mod
+rm -i */*/*/*/*.mod
+rm -i */exe_*
+rm -i */*/exe_*
+rm -i */*/*/exe_*
+rm -i */*/*/*/exe_*

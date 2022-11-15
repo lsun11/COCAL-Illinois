@@ -1,0 +1,15 @@
+  120   48   96   12           : nrg, ntg, npg, nlg
+   32   48   96   12           : nrf, ntf, npf, nlf
+   30   40   JB   XZ           : nrf_deform, nrgin, NS_shape, EQ_point
+   0.0d+00  1.25d+00   1.0d+04 : rgin, rgmid, rgout
+#
+ 1800    y    n                : iter_max, sw_mass_iter, sw_art_deform
+   0.4d-00   0.1d-00           : conv_gra, conv_ini
+   0.4d-00   0.4d-00           : conv_den, conv_vep
+   1D   3D   ccc               : indata_type,outdata_type,chrot,chgra,chope
+   1.0e-06   1.0e-06           : eps, mass_eps
+#
+    1   -2                     : num_sol_seq, deform_par
+  1.529346E-01  5.000000E-01   : emdc, pinx
+  1.508910E+00  1.350000E+00   : restmass_sph, gravmass_sph
+  1.792424E-01  7.531700E+00   : MoverR_sph,  schwarz_radi_sph  (K=1 unit)

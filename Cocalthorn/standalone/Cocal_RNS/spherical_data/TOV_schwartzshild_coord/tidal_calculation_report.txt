@@ -1,0 +1,7 @@
+For Gamma <= 2 , ovphy.dat shows the correct result. (since correction is not
+needed)
+For Gamma >  2 , ovlas.dat shows the correct result in the last line. (surface
+correction is needed)
+
+For peos, ovlas.dat shows the correct result in the last line. (corrections
+are needed)

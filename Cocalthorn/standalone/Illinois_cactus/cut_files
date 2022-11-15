@@ -1,0 +1,18 @@
+head -n84    cocal_input.d > grid1
+tail -n1428  cocal_input.d | head -n84 > grid2
+tail -n1344  cocal_input.d | head -n84 > grid3
+tail -n1260  cocal_input.d | head -n84 > grid4
+tail -n1176  cocal_input.d | head -n84 > grid5
+tail -n1092  cocal_input.d | head -n84 > grid6
+tail -n1008  cocal_input.d | head -n84 > grid7
+tail -n924   cocal_input.d | head -n84 > grid8
+tail -n840   cocal_input.d | head -n84 > grid9
+tail -n756   cocal_input.d | head -n84 > grid10
+tail -n672   cocal_input.d | head -n84 > grid11
+tail -n588   cocal_input.d | head -n84 > grid12
+tail -n504   cocal_input.d | head -n84 > grid13
+tail -n420   cocal_input.d | head -n84 > grid14
+tail -n336   cocal_input.d | head -n84 > grid15
+tail -n252   cocal_input.d | head -n84 > grid16
+tail -n168   cocal_input.d | head -n84 > grid17
+tail -n84    cocal_input.d > grid18

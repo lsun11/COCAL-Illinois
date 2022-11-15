@@ -1,0 +1,11 @@
+  400   40   80    6           : nrg, ntg, npg, nlg
+  100   40   80    6           : nrf, ntf, npf, nlf
+   90  200                     : nrf_deform, nrgin
+   0.0d+00   2.0d+00   1.0d+04 : rgin, rgmid, rgout
+  300    1                     : itmx, numseq
+   0.4d-00   0.1d-00           : conv_gra, convini
+   0.4d-00   0.4d-00           : conv_den, conv_vep
+    0    0    0   cccc         : itype,iwrite,iddd, chrot, chbhs, chgra, chope
+   2.91394E-02   1.00000d+00   : emdc, pinx
+   1.00000e-05   3.00000e-05   : eps, rmeps
+   5.96133E-02   5.81244E-02   : restmass, gravmass

@@ -1,0 +1,35 @@
+subroutine source_trfreeG_WL(souten)
+  use grid_parameter, only : nrg, ntg, npg
+  use interface_sourceterm_trfreeG_WL
+  use interface_sourceterm_trfreeG_corot
+  use make_array_4d
+  implicit none
+  real(8), pointer :: souten(:,:,:,:)
+  real(8), pointer :: sou1(:,:,:,:), sou2(:,:,:,:)
+  integer :: irg
+!
+  call alloc_array4d(sou1,0,nrg,0,ntg,0,npg,1,6)
+  call alloc_array4d(sou2,0,nrg,0,ntg,0,npg,1,6)
+!
+  call sourceterm_trfreeG_WL(sou1)
+  call sourceterm_trfreeG_corot(sou2)
+  souten(0:nrg,0:ntg,0:npg,1:6) = sou1(0:nrg,0:ntg,0:npg,1:6) &
+  &                             + sou2(0:nrg,0:ntg,0:npg,1:6)
+!
+  deallocate(sou1)
+  deallocate(sou2)
+!
+!        call interpo_linear_type0(psigc,psi,irg,itg,ipg)
+!        call interpo_linear_type0(alpgc,alph,irg,itg,ipg)
+!        psigc4 = psigc**4
+!        ramgc = ramg(irg,itg,ipg)
+!        emdgc = emdg(irg,itg,ipg)
+!        call peos_q2hprho(emdgc,hhgc,pregc,rhogc,ene)
+!
+!        utgc  = swflu *ramgc/(alpgc**2*hhgc) &
+!        &      +(1.0d0-swflu)*hhgc/ber
+!          sab(ia,ib) = swflu*rhogc/hhgc &
+!             &            *gradvg(irg,itg,ipg,ia)*gradvg(irg,itg,ipg,ib) &
+!             &     +(1.0d0-swflu)*hhgc*rhogc*utgc**2*psigc4**2*ovd(ia)*ovd(ib)
+!
+end subroutine source_trfreeG_WL

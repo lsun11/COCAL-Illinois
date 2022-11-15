@@ -1,0 +1,8 @@
+Count columns:
+[atsok@ap0 work_area_RNS]$ awk '{print NF}' rnsphyplot_all_64_48.dat | sort -nu
+48
+
+Count lines:
+[atsok@ap0 work_area_RNS]$ wc -l < rnsphyplot_all_64_48.dat
+71
+

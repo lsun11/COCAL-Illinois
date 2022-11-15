@@ -1,0 +1,25 @@
+# Gnuplot script file for plotting vector plot in the XY plane
+
+reset ;
+x1=-6;   x2=6.0; 
+y1=-6;   y2=6.0 ; 
+xns1=-4  ;  xns2=4 ;
+re=1.125 ;  
+set size sq;
+set xtics x1,1.0,x2 ;
+set ytics y1,1.0,y2 ;
+set grid;  set xrange [x1:x2];  set yrange [y1:y2];
+set xlabel "x"  font "Helvetica, 18" ;
+set ylabel "y" font "Helvetica, 18" ; 
+set pointsize 0.7 ;
+set parametric;
+mf=8 ;
+set terminal postscript enhanced eps solid color "Helvetica" 24
+set output "bns_contour_xy_mpt2_bvxy.eps"
+#plot "./BBH_contour_xy.dat" u 1:2:(mf*($5)):(mf*($6)) w vec notitle lt 1 lw 2, bhp2+re*cos(t),re*sin(t) notitle lt  2, \
+#                                                                          ra1*cos(t),ra1*sin(t) notitle lt -1 lw 1.5, \
+#                                                                     bhp2+ra2*cos(t),ra2*sin(t) notitle lt -1 lw 1.5
+plot "bnsshape_xy_mpt1.dat" u (xns1+$1):2  w filledcurve fs solid 0.1 lc rgb '#0000FF' notitle,\
+     "bnsshape_xy_mpt2.dat" u (xns2-$1):(-($2))  w filledcurve fs solid 0.1 lc rgb '#0000FF' notitle,\
+     "bns_contour_xy_mpt2.dat" u (xns2-$1):(-($2)):(-mf*($9)):(-mf*($10)) every 6:6 w vec notitle lt 1 lw 2
+#     "bns_contour_xy_mpt1.dat" u ($1+xns1):2:(mf*($9)):(mf*($10)) every 6:6 w vec notitle lt 1 lw 2

@@ -1,0 +1,45 @@
+subroutine calc_omega_drot(vphiy,alphw,psiw,bvydw,hyydw,omega,Jome,Jome_int)
+  use phys_constant, only  : long
+  use coordinate_grav_r, only : rg
+  use def_matter_parameter
+!  use def_vector_phi, only : vec_phi
+  implicit none
+  real(long), intent(in):: vphiy, alphw, psiw, bvydw, hyydw
+  real(long), intent(inout):: omega
+  real(long), intent(out):: Jome, Jome_int
+! -- Jome: functional of Omega (specific angular momentum in Newtonian)
+! -- Jome_int: integration of Jome w.r.t. omega
+!
+  real(long) :: omega_bak
+  integer    :: flag_st
+!-------------------------------------------------------------
+! Assume axisymmetry.  
+! Compute only on xz plane then copy to the other phi=const planes.
+!
+  omega_bak = omega
+  call calc_omega_drot_secant(vphiy,alphw,psiw,bvydw,hyydw,omega,flag_st)
+  if (flag_st.eq.1) then
+    omega = omega_bak
+    call calc_omega_drot_bisection(vphiy,alphw,psiw,bvydw,hyydw,omega)
+  end if
+!
+  call calc_J_utuphi(vphiy,alphw,psiw,bvydw,hyydw,omega,Jome)
+  Jome_int = &
+  &     A2DR*ome**2*((-0.7853981633974483*A2DR)/B2DR +   &
+  &    (1.*A2DR**3*Jome*ome**3)/(Jome**4 + A2DR**4*ome**4) +   &
+  &    (1.*A2DR**3*Jome**2*ome**2)/  &
+  &     (B2DR*Jome**4 + A2DR**4*B2DR*ome**4) +   &
+  &    (0.3535533905932738 + (0.5*A2DR)/B2DR)*  &
+  &     atan(1. - (1.4142135623730951*Jome)/(A2DR*ome)) +   &
+  &    (-0.3535533905932738 + (0.5*A2DR)/B2DR)*  &
+  &     atan(1. + (1.4142135623730951*Jome)/(A2DR*ome)) +   &
+  &    0.1767766952966369*Log(Jome**2 -   &
+  &       1.4142135623730951*A2DR*Jome*ome + A2DR**2*ome**2) -   &
+  &    0.1767766952966369*Log(Jome**2 +   &
+  &       1.4142135623730951*A2DR*Jome*ome + A2DR**2*ome**2))
+!
+!write(6,*)'omega   ', omega
+!write(6,*)'Jome    ', Jome
+!write(6,*)'Jome_int', Jome_int
+!
+end subroutine calc_omega_drot

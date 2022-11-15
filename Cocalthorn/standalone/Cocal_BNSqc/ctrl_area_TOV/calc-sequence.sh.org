@@ -1,0 +1,323 @@
+cp ../parameters/TOV_code_parameters/peos_parameter.dat_G1=1.333_G2=3_rhodiv=2.6n0_prediv=100Mev_rhoc=4 peos_parameter.dat
+cp ../parameters/TOV_code_parameters/ovpar_peos.dat_radi_12km ovpar_peos.dat
+
+rm TOV_EOS_I_phy.dat
+rm TOV_EOS_I_phy_plot.dat
+
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_0.80Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_0.82Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_0.84Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_0.86Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_0.88Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_0.90Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_0.92Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_0.94Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_0.96Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_0.98Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.00Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.02Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.04Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.06Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.08Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.10Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.12Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.14Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.16Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.18Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.20Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.22Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.24Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.26Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.28Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.30Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.32Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.34Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.36Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.38Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.40Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.42Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.44Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.46Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.48Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.50Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.52Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.54Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.56Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.58Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.60Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.62Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.64Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.66Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.68Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.70Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.72Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.74Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.76Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.78Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.80Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.82Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.84Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.86Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.88Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.90Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.92Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.94Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.96Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_1.98Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat
+
+cp ../parameters/TOV_code_parameters/rnspar.dat.gravmass_2.00Msol rnspar.dat
+sh calc-1_model_parameter.sh
+sh calc-1_copy_TOV_results.sh
+cat ovphy.dat >> TOV_EOS_I_phy.dat
+cat ovphy_plot.dat >> TOV_EOS_I_phy_plot.dat

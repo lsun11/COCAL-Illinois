@@ -1,0 +1,8 @@
+module interface_update_parameter_BNS_spin
+  implicit none
+  interface 
+    subroutine update_parameter_BNS_spin(convf)
+      real(8), intent(in) :: convf
+    end subroutine update_parameter_BNS_spin
+  end interface
+end module interface_update_parameter_BNS_spin

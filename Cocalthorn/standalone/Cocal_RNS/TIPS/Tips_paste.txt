@@ -1,0 +1,5 @@
+# paste command is used for merging two files horizontally.
+
+sed "/^ -/d" D12_H2_x.dat > tmp.dat
+sed -i "1d" tmp.dat 
+paste tmp.dat valx_low_12.dat > test.dat

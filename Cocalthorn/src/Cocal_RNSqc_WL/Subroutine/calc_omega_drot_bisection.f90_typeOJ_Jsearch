@@ -1,0 +1,144 @@
+subroutine calc_omega_drot_bisection(vphiy,alphw,psiw,bvydw,hyydw,omega)
+  use phys_constant, only  : long
+  use coordinate_grav_r, only : rg
+  use def_matter_parameter, only : ome, A2DR, DRAT_A2DR, index_DRq, &
+  &                                     B2DR, DRAT_B2DR, index_DRp
+  implicit none
+  real(long), intent(in):: vphiy, alphw, psiw, bvydw, hyydw
+  real(long), intent(inout):: omega
+! -- Jome: functional of Omega (specific angular momentum in Newtonian)
+! -- Jome_int: integration of Jome w.r.t. omega
+!
+  real(long) :: omega0, omega1, omegam, omegatmp
+  real(long) :: Jome, Jome0, Jome1, Jomem, Jometmp
+  real(long) :: sgg0, sgg1, sggm, sgg0m, sgg1m
+  real(long) :: p4a2, ovyu, ov2, ovphi, term1, term2, term3
+  real(long) :: ddomega, del_omega
+  real(long) :: ddJome,  del_Jome
+  real(long) :: error, small, smallome = 1.0d-30, largeome
+  real(long) :: smallJome, largeJome
+  integer    :: i, numero, ic, nic
+!-------------------------------------------------------------
+! Assume axisymmetry.  
+!
+  if (ome  .eq.0.0d0) ome   = 0.01d0 ! For 1D initial
+  if (omega.eq.0.0d0) omega = 0.01d0 ! For 1D initial
+!
+  p4a2 = psiw**4/alphw**2
+  numero = 1
+!
+  if (vphiy.lt.0.001d0*rg(1)) then
+    omega = ome
+  else
+!
+  call calc_J_utuphi(vphiy,alphw,psiw,bvydw,hyydw,omega,Jome)
+!
+  smallJome = 0.0d0
+  largeJome = Jome*10.0d0
+  nic = 400
+  del_Jome  = Jome*0.01d0
+  small     = Jome
+!
+  ic = 0
+  do 
+    ic = ic + 1
+    do i = 0, 1
+      if (i.eq.0) Jome = max(smallJome,small - dble(ic)*del_Jome)
+      if (i.eq.1) Jome = min(largeJome,small + dble(ic)*del_Jome)
+!
+      omegatmp = ome*(1.0d0+(Jome/(B2DR*ome))**index_DRp) &
+      &             /(1.0d0+(Jome/(A2DR*ome))**(index_DRq+index_DRp))
+!
+      call calc_J_utuphi(vphiy,alphw,psiw,bvydw,hyydw,omegatmp,Jometmp)
+!
+      if (i.eq.0) sgg0 = Jome - Jometmp
+      if (i.eq.1) sgg1 = Jome - Jometmp
+    end do
+!
+    if (sgg0*sgg1.le.0.0d0) then 
+      Jome0 = max(smallJome,small - dble(ic)*del_Jome)
+      Jome1 = min(largeJome,small + dble(ic)*del_Jome)
+!!write(6,*)'Jome', Jome
+!!write(6,*) ic, 'Jome0 Jome1', Jome0,Jome1
+!!write(6,*) ic, 'sgg0 sgg1', sgg0, sgg1
+!!write(6,*) small
+      exit
+    end if
+!
+    if (ic.ge.nic) then 
+      Jome0 = smallJome
+      Jome1 = largeJome*10.0d0
+!!write(6,*)'Jome', Jome
+!!write(6,*) ic, 'Jome0 Jome1', Jome0,Jome1
+!!write(6,*) ic, 'sgg0 sgg1', sgg0, sgg1
+!!write(6,*) small
+      exit
+    end if
+!
+  end do 
+!
+!!write(6,*) 'search'
+!!write(6,*) 'Jome0 Jome1', Jome0,Jome1
+!!write(6,*) 'sgg0 sgg1', sgg0, sgg1
+!
+  do 
+    Jomem = (Jome0 + Jome1)*0.5d0
+    do i = 0, 2
+      if (i.eq.0) Jome = Jome0
+      if (i.eq.1) Jome = Jome1
+      if (i.eq.2) Jome = Jomem
+!
+      omegatmp = ome*(1.0d0+(Jome/(B2DR*ome))**index_DRp) &
+      &             /(1.0d0+(Jome/(A2DR*ome))**(index_DRq+index_DRp))
+!
+      call calc_J_utuphi(vphiy,alphw,psiw,bvydw,hyydw,omegatmp,Jometmp)
+!
+      if (i.eq.0) then ; sgg0 = Jome - Jometmp ; omega0 = omegatmp ; end if
+      if (i.eq.1) then ; sgg1 = Jome - Jometmp ; omega1 = omegatmp ; end if
+      if (i.eq.2) then ; sggm = Jome - Jometmp ; omegam = omegatmp ; end if
+!!write(6,*) Jome, Jometmp
+!
+    end do
+    sgg0m = sgg0*sggm
+    sgg1m = sgg1*sggm
+!
+    ddomega = omega1 - omega0
+    omega = omegam
+    if (sggm.eq.0.0d0) then 
+      ddomega = 0.0d0
+    else if (sgg0m.gt.0.0d0.and.sgg1m.le.0.0d0) then
+      Jome0 = Jomem
+    else if (sgg0m.le.0.0d0.and.sgg1m.gt.0.0d0) then
+      Jome1 = Jomem
+    else
+write(6,*) ic
+write(6,*) Jome0, Jomem, Jome1
+write(6,*) sgg0, sggm, sgg1
+      stop 'calc_omega_drot_bisection.f90_typeOJ'
+    end if
+!
+    if (omega.le.0.0d0) omega = smallome
+!!    if (omega.le.0.0d0) omega = small
+!!    error = dabs(ddomega/ome)
+    error = dabs(ddomega/omega)
+    numero = numero + 1
+    if (numero>1000) then
+!!write(6,*) omega0, omegam, omega1
+!!write(6,*) vphiy, ome, ddomega
+!!write(6,*) ome, p4a2, bvydw
+!!write(6,*) Jome, ovyu, omega
+      write(6,*)' numero = ', numero, '   error =',error
+    end if
+!      if (iter<10.and.numero>10) exit
+    if (numero>1010) stop 'rotation law'
+    if (dabs(error)<1.0d-14) exit
+!write(6,*) Jome, ovyu, omega
+!!write(6,*) Jome1, dJome1do
+!!write(6,*) Jome2, dJome2do
+!write(6,*) omega,ddomega,sgg
+!!pause
+  end do
+  end if
+!!  end if
+!
+end subroutine calc_omega_drot_bisection

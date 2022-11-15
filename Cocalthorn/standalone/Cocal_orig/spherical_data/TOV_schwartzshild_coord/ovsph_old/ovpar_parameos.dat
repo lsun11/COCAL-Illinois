@@ -1,0 +1,5 @@
+  100   16  7.4000000d+00        : nstep, ndiv, radiini
+    1   16  0.1550000d-00        : itype, idum, chope
+
+itype = 0  iteration for compactness, ADM mass or rest mass
+itype = 1  single structure

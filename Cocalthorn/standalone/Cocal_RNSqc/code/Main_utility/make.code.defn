@@ -1,0 +1,7 @@
+# Main make.code.defn file for thorn Cocal
+
+# Source files in this directory
+SRCS = coc2cac_ini_sub.F90
+
+# Subdirectories containing source files
+SUBDIRS = 

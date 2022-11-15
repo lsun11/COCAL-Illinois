@@ -1,0 +1,6 @@
+Path  of the folder containing the initial data:
+------------------------------------------------
+/home/antonios/Data/MY/MYPYTHON/MRNS/work_area_RNS_M1.5_SD3
+--------------------------------------------------------------------------------
+Switch for magnetized RNS: If "1" the A_i are read. Anything else reads B_i
+1

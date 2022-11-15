@@ -1,0 +1,500 @@
+subroutine riccitensor_midpoint
+  use grid_parameter, only : nrg, ntg, npg
+  use coordinate_grav_r, only : hrg
+  use def_metric_hij, only : hxxd, hxyd, hxzd, hyyd, hyzd, hzzd, &
+  &                          hxxu, hxyu, hxzu, hyyu, hyzu, hzzu
+  use def_cristoffel, only : cri, crid
+  use def_transverse_part
+  use def_ricci_tensor, only : rab, rabnl, rabDF
+  use def_vector_x, only : hvec_xg
+  use interface_interpo_linear_type0
+  use interface_grgrad1g_midpoint
+  use interface_dadbscalar_type0
+  use interface_dadbscalar_type3
+  implicit none
+!
+  real(8) :: delhab(6), &
+     &       r5(5),  th5(5), phi5(5), &
+     &       fr5(5),  ft5(5),  fp5(5), fr5x(5), ft5x(5), fp5x(5), &
+     &       fr5y(5), ft5y(5), fp5y(5), fr5z(5), ft5z(5), fp5z(5), &
+     &       xi(4),  yi1(4),  yi2(4),  yi3(4),  yi4(4), &
+     &       yi5(4),  yi6(4),  yi7(4),  yi8(4),  yi9(4), &
+     &       grad1(3), grad1x(3), grad1y(3),  grad1z(3), &
+     &       dckkx(3),  dckky(3),  dckkz(3), dhudhd(3,3), dhdh(6), &
+     &       r6(6), th6(6), phi6(6), &
+     &       fr6xx(6), ft6xx(6), fp6xx(6), fr5xx(5), ft5xx(5), &
+     &       fr6xy(6), ft6xy(6), fp6xy(6), fr5xy(5), ft5xy(5), &
+     &       fr6xz(6), ft6xz(6), fp6xz(6), fr5xz(5), ft5xz(5), &
+     &       fr6yy(6), ft6yy(6), fp6yy(6), fr5yy(5), ft5yy(5), &
+     &       fr6yz(6), ft6yz(6), fp6yz(6), fr5yz(5), ft5yz(5), &
+     &       fr6zz(6), ft6zz(6), fp6zz(6), fr5zz(5), ft5zz(5)
+  real(8) :: dhd(3,3,3), dhu(3,3,3),  gamu(3,3)
+  real(8) :: d2hxx(3,3), d2hxy(3,3), d2hxz(3,3), &
+     &       d2hyy(3,3), d2hyz(3,3), d2hzz(3,3)
+  real(8) :: hd2h(6)
+  real(8) :: Ftvxu, Ftvyu, Ftvzu, dFtv(3,3), fdFtv(6), dhFtv(6), Fcrid(6)
+  real(8) :: c11, c12, c13, c14, c15, c16, &
+  &          c21, c22, c23, c24, c25, c26, &
+  &          c31, c32, c33, c34, c35, c36, &
+  &          crid11, crid12, crid13, crid14, crid15, crid16, &
+  &          crid21, crid22, crid23, crid24, crid25, crid26, &
+  &          crid31, crid32, crid33, crid34, crid35, crid36, &
+  &          ckkx, ckky, ckkz, &
+  &          ckxlclxk, ckxlclyk, ckxlclzk, &
+  &          ckylclyk, ckylclzk, ckzlclzk, &
+  &          clxxckkl, clxyckkl, clxzckkl, &
+  &          clyyckkl, clyzckkl, clzzckkl, &
+  &          hhxxu, hhxyu, hhxzu, hhyxu, hhyyu, hhyzu, &
+  &          hhzxu, hhzyu, hhzzu, &
+  &          hhxxd, hhxyd, hhxzd, hhyxd, hhyyd, hhyzd, &
+  &          hhzxd, hhzyd, hhzzd
+  integer :: ipg, itg, irg, ia, ib, ic, id
+!
+! --- Compute Ricci tensor & R_ab(nonlinar)   
+!     whose value is assigned on the grid points. 
+!     Gauge condition \tgamma = flat has been imposed,  
+!     Gauge variable F^a is introduced.
+! --- Should be used with gauge imposition routines.
+!
+!open(16,file='test_vec_ricci',status='unknown')
+!
+  do ipg = 1, npg
+    do itg = 1, ntg
+      do irg = 1, nrg
+!
+! --- R_nonlinear
+!
+        call interpo_linear_type0(hhxxu,hxxu,irg,itg,ipg)
+        call interpo_linear_type0(hhxyu,hxyu,irg,itg,ipg)
+        call interpo_linear_type0(hhxzu,hxzu,irg,itg,ipg)
+        call interpo_linear_type0(hhyyu,hyyu,irg,itg,ipg)
+        call interpo_linear_type0(hhyzu,hyzu,irg,itg,ipg)
+        call interpo_linear_type0(hhzzu,hzzu,irg,itg,ipg)
+        hhyxu = hhxyu
+        hhzxu = hhxzu
+        hhzyu = hhyzu
+        gamu(1,1) = hhxxu + 1.0d0
+        gamu(1,2) = hhxyu
+        gamu(1,3) = hhxzu
+        gamu(2,2) = hhyyu + 1.0d0
+        gamu(2,3) = hhyzu
+        gamu(3,3) = hhzzu + 1.0d0
+        gamu(2,1) = gamu(1,2)
+        gamu(3,1) = gamu(1,3)
+        gamu(3,2) = gamu(2,3)
+        call interpo_linear_type0(hhxxd,hxxd,irg,itg,ipg)
+        call interpo_linear_type0(hhxyd,hxyd,irg,itg,ipg)
+        call interpo_linear_type0(hhxzd,hxzd,irg,itg,ipg)
+        call interpo_linear_type0(hhyyd,hyyd,irg,itg,ipg)
+        call interpo_linear_type0(hhyzd,hyzd,irg,itg,ipg)
+        call interpo_linear_type0(hhzzd,hzzd,irg,itg,ipg)
+        hhyxd = hhxyd
+        hhzxd = hhxzd
+        hhzyd = hhyzd
+!
+        c11 = cri(irg,itg,ipg,1,1)
+        c12 = cri(irg,itg,ipg,1,2)
+        c13 = cri(irg,itg,ipg,1,3)
+        c14 = cri(irg,itg,ipg,1,4)
+        c15 = cri(irg,itg,ipg,1,5)
+        c16 = cri(irg,itg,ipg,1,6)
+        c21 = cri(irg,itg,ipg,2,1)
+        c22 = cri(irg,itg,ipg,2,2)
+        c23 = cri(irg,itg,ipg,2,3)
+        c24 = cri(irg,itg,ipg,2,4)
+        c25 = cri(irg,itg,ipg,2,5)
+        c26 = cri(irg,itg,ipg,2,6)
+        c31 = cri(irg,itg,ipg,3,1)
+        c32 = cri(irg,itg,ipg,3,2)
+        c33 = cri(irg,itg,ipg,3,3)
+        c34 = cri(irg,itg,ipg,3,4)
+        c35 = cri(irg,itg,ipg,3,5)
+        c36 = cri(irg,itg,ipg,3,6)
+!
+        crid11 = crid(irg,itg,ipg,1,1)
+        crid12 = crid(irg,itg,ipg,1,2)
+        crid13 = crid(irg,itg,ipg,1,3)
+        crid14 = crid(irg,itg,ipg,1,4)
+        crid15 = crid(irg,itg,ipg,1,5)
+        crid16 = crid(irg,itg,ipg,1,6)
+        crid21 = crid(irg,itg,ipg,2,1)
+        crid22 = crid(irg,itg,ipg,2,2)
+        crid23 = crid(irg,itg,ipg,2,3)
+        crid24 = crid(irg,itg,ipg,2,4)
+        crid25 = crid(irg,itg,ipg,2,5)
+        crid26 = crid(irg,itg,ipg,2,6)
+        crid31 = crid(irg,itg,ipg,3,1)
+        crid32 = crid(irg,itg,ipg,3,2)
+        crid33 = crid(irg,itg,ipg,3,3)
+        crid34 = crid(irg,itg,ipg,3,4)
+        crid35 = crid(irg,itg,ipg,3,5)
+        crid36 = crid(irg,itg,ipg,3,6)
+!
+!confo      ckkx = c11 + c22 + c33      
+!confo      ckky = c12 + c24 + c35      
+!confo      ckkz = c13 + c25 + c36
+        ckkx = 0.0d0
+        ckky = 0.0d0
+        ckkz = 0.0d0
+!
+        ckxlclxk = c11**2 + 2.0d0*c12*c21 + c22**2 + &
+           &       2.0d0*c13*c31 + 2.0d0*c23*c32 + c33**2
+        ckxlclyk = c11*c12 + c14*c21 + c12*c22 + c22*c24 + &
+           &       c15*c31 + c13*c32 + c25*c32 + c23*c34 + c33*c35
+        ckxlclzk = c11*c13 + c15*c21 + c12*c23 + c22*c25 + &
+           &       c16*c31 + c26*c32 + c13*c33 + c23*c35 + c33*c36
+        ckylclyk = c12**2 + 2.0d0*c14*c22 + c24**2 + &
+           &       2.0d0*c15*c32 + 2.0d0*c25*c34 + c35**2
+        ckylclzk = c12*c13 + c15*c22 + c14*c23 + c24*c25 + &
+           &       c16*c32 + c15*c33 + c26*c34 + c25*c35 + c35*c36
+        ckzlclzk = c13**2 + 2.0d0*c15*c23 + c25**2 + &
+           &       2.0d0*c16*c33 + 2.0d0*c26*c35 + c36**2
+!
+!confo      clxxckkl = c11*ckkx + c21*ckky + c31*ckkz
+!confo      clxyckkl = c12*ckkx + c22*ckky + c32*ckkz
+!confo      clxzckkl = c13*ckkx + c23*ckky + c33*ckkz
+!confo      clyyckkl = c14*ckkx + c24*ckky + c34*ckkz
+!confo      clyzckkl = c15*ckkx + c25*ckky + c35*ckkz
+!confo      clzzckkl = c16*ckkx + c26*ckky + c36*ckkz
+        clxxckkl = 0.0d0
+        clxyckkl = 0.0d0
+        clxzckkl = 0.0d0
+        clyyckkl = 0.0d0
+        clyzckkl = 0.0d0
+        clzzckkl = 0.0d0
+!
+! --- gradient of cristoffel = 0 for gauge condition.
+!
+!confo      ir0 = min0(max0(irg-2,0),nrg-4)
+!confo      it0 = min0(max0(itg-2,0),ntg-4)
+!confo      ip0 = min0(max0(ipg-2,0),npg-4)
+!
+!confo      do 7 ic = 1, 3
+!
+!confo      ic1 = 1*(ic-2)*(ic-3)/2 - 2*(ic-1)*(ic-3) + 3*(ic-1)*(ic-2)/2
+!confo      ic2 = 2*(ic-2)*(ic-3)/2 - 4*(ic-1)*(ic-3) + 5*(ic-1)*(ic-2)/2
+!confo      ic3 = 3*(ic-2)*(ic-3)/2 - 5*(ic-1)*(ic-3) + 6*(ic-1)*(ic-2)/2
+!
+!confo      do 8 ii = 1, 5
+!confo      irg0 = ir0 + ii - 1
+!confo      itg0 = it0 + ii - 1
+!confo      ipg0 = ip0 + ii - 1
+!confo      r5(ii) = rg(irg0)
+!confo      th5(ii) = thg(itg0)
+!confo      phi5(ii) = phig(ipg0)
+!
+!confo      if (irg == 0) then
+!confo      fr5(ii) = cri(irg0,ntg,npgxz,1,ic1) + cri(irg0,ntg,npgxz,2,ic2)
+!confo     &        + cri(irg0,ntg,npgxz,3,ic3)
+!confo      ft5(ii) = cri(irg0,ntg,npgyz,1,ic1) + cri(irg0,ntg,npgyz,2,ic2)
+!confo     &        + cri(irg0,ntg,npgyz,3,ic3)
+!confo      fp5(ii) = cri(irg0,0,0,1,ic1) + cri(irg0,0,0,2,ic2)
+!confo     &        + cri(irg0,0,0,3,ic3)
+!confo      else if (irg /= 0.and.itg == 0) then
+!confo      fr5(ii) = cri(irg,itg0,npgxz,1,ic1) + cri(irg,itg0,npgxz,2,ic2)
+!confo     &        + cri(irg,itg0,npgxz,3,ic3)
+!confo      ft5(ii) = cri(irg,itg0,npgyz,1,ic1) + cri(irg,itg0,npgyz,2,ic2)
+!confo     &        + cri(irg,itg0,npgyz,3,ic3)
+!confo      fp5(ii) = cri(irg0,0,0,1,ic1) + cri(irg0,0,0,2,ic2)
+!confo     &        + cri(irg0,0,0,3,ic3)
+!confo      else
+!confo      fr5(ii) = cri(irg0,itg,ipg,1,ic1) + cri(irg0,itg,ipg,2,ic2)
+!confo     &        + cri(irg0,itg,ipg,3,ic3)
+!confo      ft5(ii) = cri(irg,itg0,ipg,1,ic1) + cri(irg,itg0,ipg,2,ic2)
+!confo     &        + cri(irg,itg0,ipg,3,ic3)
+!confo      fp5(ii) = cri(irg,itg,ipg0,1,ic1) + cri(irg,itg,ipg0,2,ic2)
+!confo     &        + cri(irg,itg,ipg0,3,ic3)
+!confo      end if
+!confo    8 continue
+!
+! --- To cartesian component.  
+!
+!confo      rv = rg(irg)
+!confo      tv = thg(itg)
+!confo      pv = phig(ipg)
+!confo      rrgginv = rginv(irg)
+!
+!confo      if (irg == 0) then
+!confo      grad1(1) = dfncdx(r5,fr5,rv)
+!confo      grad1(2) = dfncdx(r5,ft5,rv) 
+!confo      grad1(3) = dfncdx(r5,fp5,rv)
+!confo      else if (irg /= 0.and.itg == 0) then
+!confo      grad1(1) = dfncdx(th5,fr5,tv)*rrgginv
+!confo      grad1(2) = dfncdx(th5,ft5,tv)*rrgginv
+!confo      grad1(3) = dfncdx(r5,fp5,rv)
+!confo      else
+!confo      gr1 = dfncdx(r5,fr5,rv)
+!confo      gr2 = dfncdx(th5,ft5,tv)*rrgginv
+!confo      gr3 = dfncdx(phi5,fp5,pv)*rrgginv*cosecthg(itg)
+!confo      grad1(1) = gr1*sinthg(itg)*cosphig(ipg)
+!confo     &         + gr2*costhg(itg)*cosphig(ipg)  
+!confo     &         - gr3*sinphig(ipg) 
+!confo      grad1(2) = gr1*sinthg(itg)*sinphig(ipg)
+!confo     &         + gr2*costhg(itg)*sinphig(ipg)
+!confo     &         + gr3*cosphig(ipg) 
+!confo      grad1(3) = gr1*costhg(itg)
+!confo     &         - gr2*sinthg(itg)
+!
+!confo      end if
+!
+!confo      if (ic == 1) then 
+!confo      dckkx(1) = grad1(1)
+!confo      dckkx(2) = grad1(2)
+!confo      dckkx(3) = grad1(3)
+!confo      end if
+!confo      if (ic == 2) then 
+!confo      dckky(1) = grad1(1)
+!confo      dckky(2) = grad1(2)
+!confo      dckky(3) = grad1(3)
+!confo      end if
+!confo      if (ic == 3) then 
+!confo      dckkz(1) = grad1(1)
+!confo      dckkz(2) = grad1(2)
+!confo      dckkz(3) = grad1(3)
+!confo      end if
+!
+!confo    7 continue
+!
+        dckkx(1:3) = 0.0D0
+        dckky(1:3) = 0.0D0
+        dckkz(1:3) = 0.0D0
+!
+! --- Derivatives of h_ab.
+!
+        call grgrad1g_midpoint(hxxd,grad1,irg,itg,ipg)
+        dhd(1,1,1:3) = grad1(1:3)
+        call grgrad1g_midpoint(hxyd,grad1,irg,itg,ipg)
+        dhd(1,2,1:3) = grad1(1:3)
+        dhd(2,1,1:3) = grad1(1:3)
+        call grgrad1g_midpoint(hxzd,grad1,irg,itg,ipg)
+        dhd(1,3,1:3) = grad1(1:3)
+        dhd(3,1,1:3) = grad1(1:3)
+        call grgrad1g_midpoint(hyyd,grad1,irg,itg,ipg)
+        dhd(2,2,1:3) = grad1(1:3)
+        call grgrad1g_midpoint(hyzd,grad1,irg,itg,ipg)
+        dhd(2,3,1:3) = grad1(1:3)
+        dhd(3,2,1:3) = grad1(1:3)
+        call grgrad1g_midpoint(hzzd,grad1,irg,itg,ipg)
+        dhd(3,3,1:3) = grad1(1:3)
+!
+        call grgrad1g_midpoint(hxxu,grad1,irg,itg,ipg)
+        dhu(1,1,1:3) = grad1(1:3)
+        call grgrad1g_midpoint(hxyu,grad1,irg,itg,ipg)
+        dhu(1,2,1:3) = grad1(1:3)
+        dhu(2,1,1:3) = grad1(1:3)
+        call grgrad1g_midpoint(hxzu,grad1,irg,itg,ipg)
+        dhu(1,3,1:3) = grad1(1:3)
+        dhu(3,1,1:3) = grad1(1:3)
+        call grgrad1g_midpoint(hyyu,grad1,irg,itg,ipg)
+        dhu(2,2,1:3) = grad1(1:3)
+        call grgrad1g_midpoint(hyzu,grad1,irg,itg,ipg)
+        dhu(2,3,1:3) = grad1(1:3)
+        dhu(3,2,1:3) = grad1(1:3)
+        call grgrad1g_midpoint(hzzu,grad1,irg,itg,ipg)
+        dhu(3,3,1:3) = grad1(1:3)
+!
+! ---  Transverse part F^a. and their derivatives
+!
+        Ftvxu = Ftvx(irg,itg,ipg)
+        Ftvyu = Ftvy(irg,itg,ipg)
+        Ftvzu = Ftvz(irg,itg,ipg)
+        call grgrad1g_midpoint(Ftvx_grid,grad1,irg,itg,ipg)
+        dFtv(1,1:3) = grad1(1:3)
+        call grgrad1g_midpoint(Ftvy_grid,grad1,irg,itg,ipg)
+        dFtv(2,1:3) = grad1(1:3)
+        call grgrad1g_midpoint(Ftvz_grid,grad1,irg,itg,ipg)
+        dFtv(3,1:3) = grad1(1:3)
+!
+! --- Impose Dirac gauge.
+!
+!test      dhu(1,1,1) = - dhu(1,2,2) - dhu(1,3,3)
+!test      dhu(2,2,2) = - dhu(2,1,1) - dhu(2,3,3)
+!test      dhu(3,3,3) = - dhu(3,1,1) - dhu(3,2,2)
+!dirac      dhu(1,3,3) = - dhu(1,1,1) - dhu(1,2,2)
+!dirac      dhu(2,3,3) = - dhu(2,1,1) - dhu(2,2,2)
+!dirac      dhu(3,3,3) = - dhu(3,1,1) - dhu(3,2,2)
+!dirac      dhu(3,1,3) = dhu(1,3,3)
+!dirac      dhu(3,2,3) = dhu(2,3,3)
+!test3      dhu(1,1,1) = - dhu(1,2,2) - dhu(1,3,3)
+!test3      dhu(2,1,1) = - dhu(2,2,2) - dhu(2,3,3)
+!test3      dhu(3,1,1) = - dhu(3,2,2) - dhu(3,3,3)
+!test3      dhu(1,2,1) = dhu(2,1,1)
+!test3      dhu(1,3,1) = dhu(3,1,1)
+!test4      dhu(1,2,2) = - dhu(1,1,1) - dhu(1,3,3)
+!test4      dhu(2,2,2) = - dhu(2,1,1) - dhu(2,3,3)
+!test4      dhu(3,2,2) = - dhu(3,1,1) - dhu(3,3,3)
+!test4      dhu(2,1,2) = dhu(1,2,2)
+!test4      dhu(2,3,2) = dhu(3,2,2)
+!
+!dirac      dhx=gamu(1,1)*dhd(1,1,1)+gamu(1,2)*dhd(1,1,2)+gamu(1,3)*dhd(1,1,3)
+!dirac     &   +gamu(2,1)*dhd(2,1,1)+gamu(2,2)*dhd(2,1,2)+gamu(2,3)*dhd(2,1,3)
+!dirac     &   +gamu(3,1)*dhd(3,1,1)+gamu(3,2)*dhd(3,1,2)+gamu(3,3)*dhd(3,1,3)
+!dirac      dhy=gamu(1,1)*dhd(1,2,1)+gamu(1,2)*dhd(1,2,2)+gamu(1,3)*dhd(1,2,3)
+!dirac     &   +gamu(2,1)*dhd(2,2,1)+gamu(2,2)*dhd(2,2,2)+gamu(2,3)*dhd(2,2,3)
+!dirac     &   +gamu(3,1)*dhd(3,2,1)+gamu(3,2)*dhd(3,2,2)+gamu(3,3)*dhd(3,2,3)
+!dirac      dhz=gamu(1,1)*dhd(1,3,1)+gamu(1,2)*dhd(1,3,2)+gamu(1,3)*dhd(1,3,3)
+!dirac     &   +gamu(2,1)*dhd(2,3,1)+gamu(2,2)*dhd(2,3,2)+gamu(2,3)*dhd(2,3,3)
+!dirac     &   +gamu(3,1)*dhd(3,3,1)+gamu(3,2)*dhd(3,3,2)+gamu(3,3)*dhd(3,3,3)
+!dirac      gzzinv = 1.0d0/gamu(3,3)
+!dirac      dhd(1,3,3) = - gzzinv*dhx + dhd(1,3,3)
+!dirac      dhd(2,3,3) = - gzzinv*dhy + dhd(2,3,3)
+!dirac      dhd(3,3,3) = - gzzinv*dhz + dhd(3,3,3)
+!dirac      dhd(3,1,3) = dhd(1,3,3)
+!dirac      dhd(3,2,3) = dhd(2,3,3)
+!
+! --- end
+!
+        do ia = 1, 3
+          do ib = 1, 3
+            dhudhd(ia,ib) = 0.0d0
+            do ic = 1, 3
+              do id = 1, 3
+                dhudhd(ia,ib) = dhudhd(ia,ib) + dhu(ic,id,ia)*dhd(ib,id,ic)
+              end do
+            end do
+          end do
+        end do
+!        dhdh(1) = dhudhd(1,1) + dhudhd(1,1)
+!        dhdh(2) = dhudhd(1,2) + dhudhd(2,1)
+!        dhdh(3) = dhudhd(1,3) + dhudhd(3,1)
+        dhdh(1:3) = dhudhd(1,1:3) + dhudhd(1:3,1)
+        dhdh(4) = dhudhd(2,2) + dhudhd(2,2)
+        dhdh(5) = dhudhd(2,3) + dhudhd(3,2)
+        dhdh(6) = dhudhd(3,3) + dhudhd(3,3)
+!
+!        call dadbscalar_type0(hxxd,d2hxx,irg,itg,ipg)
+!        call dadbscalar_type0(hxyd,d2hxy,irg,itg,ipg)
+!        call dadbscalar_type0(hxzd,d2hxz,irg,itg,ipg)
+!        call dadbscalar_type0(hyyd,d2hyy,irg,itg,ipg)
+!        call dadbscalar_type0(hyzd,d2hyz,irg,itg,ipg)
+!        call dadbscalar_type0(hzzd,d2hzz,irg,itg,ipg)
+!
+        call dadbscalar_type3(hxxd,d2hxx,irg,itg,ipg)
+        call dadbscalar_type3(hxyd,d2hxy,irg,itg,ipg)
+        call dadbscalar_type3(hxzd,d2hxz,irg,itg,ipg)
+        call dadbscalar_type3(hyyd,d2hyy,irg,itg,ipg)
+        call dadbscalar_type3(hyzd,d2hyz,irg,itg,ipg)
+        call dadbscalar_type3(hzzd,d2hzz,irg,itg,ipg)
+!
+        hd2h(1) = hhxxu*d2hxx(1,1) + hhxyu*d2hxx(1,2) + hhxzu*d2hxx(1,3) &
+       &        + hhyxu*d2hxx(2,1) + hhyyu*d2hxx(2,2) + hhyzu*d2hxx(2,3) &
+       &        + hhzxu*d2hxx(3,1) + hhzyu*d2hxx(3,2) + hhzzu*d2hxx(3,3)
+        hd2h(2) = hhxxu*d2hxy(1,1) + hhxyu*d2hxy(1,2) + hhxzu*d2hxy(1,3) &
+       &        + hhyxu*d2hxy(2,1) + hhyyu*d2hxy(2,2) + hhyzu*d2hxy(2,3) &
+       &        + hhzxu*d2hxy(3,1) + hhzyu*d2hxy(3,2) + hhzzu*d2hxy(3,3)
+        hd2h(3) = hhxxu*d2hxz(1,1) + hhxyu*d2hxz(1,2) + hhxzu*d2hxz(1,3) &
+       &        + hhyxu*d2hxz(2,1) + hhyyu*d2hxz(2,2) + hhyzu*d2hxz(2,3) &
+       &        + hhzxu*d2hxz(3,1) + hhzyu*d2hxz(3,2) + hhzzu*d2hxz(3,3)
+        hd2h(4) = hhxxu*d2hyy(1,1) + hhxyu*d2hyy(1,2) + hhxzu*d2hyy(1,3) &
+       &        + hhyxu*d2hyy(2,1) + hhyyu*d2hyy(2,2) + hhyzu*d2hyy(2,3) &
+       &        + hhzxu*d2hyy(3,1) + hhzyu*d2hyy(3,2) + hhzzu*d2hyy(3,3)
+        hd2h(5) = hhxxu*d2hyz(1,1) + hhxyu*d2hyz(1,2) + hhxzu*d2hyz(1,3) &
+       &        + hhyxu*d2hyz(2,1) + hhyyu*d2hyz(2,2) + hhyzu*d2hyz(2,3) &
+       &        + hhzxu*d2hyz(3,1) + hhzyu*d2hyz(3,2) + hhzzu*d2hyz(3,3)
+        hd2h(6) = hhxxu*d2hzz(1,1) + hhxyu*d2hzz(1,2) + hhxzu*d2hzz(1,3) &
+       &        + hhyxu*d2hzz(2,1) + hhyyu*d2hzz(2,2) + hhyzu*d2hzz(2,3) &
+       &        + hhzxu*d2hzz(3,1) + hhzyu*d2hzz(3,2) + hhzzu*d2hzz(3,3)
+!
+! --- -1/2 Laplacian(h_ab)
+!
+        delhab(1) = d2hxx(1,1) + d2hxx(2,2) + d2hxx(3,3)
+        delhab(2) = d2hxy(1,1) + d2hxy(2,2) + d2hxy(3,3)
+        delhab(3) = d2hxz(1,1) + d2hxz(2,2) + d2hxz(3,3)
+        delhab(4) = d2hyy(1,1) + d2hyy(2,2) + d2hyy(3,3)
+        delhab(5) = d2hyz(1,1) + d2hyz(2,2) + d2hyz(3,3)
+        delhab(6) = d2hzz(1,1) + d2hzz(2,2) + d2hzz(3,3)
+!
+! --- transvers parts
+!
+        fdFtv(1) = dFtv(1,1) + dFtv(1,1)
+        fdFtv(2) = dFtv(1,2) + dFtv(2,1)
+        fdFtv(3) = dFtv(1,3) + dFtv(3,1)
+        fdFtv(4) = dFtv(2,2) + dFtv(2,2)
+        fdFtv(5) = dFtv(2,3) + dFtv(3,2)
+        fdFtv(6) = dFtv(3,3) + dFtv(3,3)
+!
+        dhFtv(1) = hhxxd*dFtv( 1,1) + hhxyd*dFtv( 2,1) + hhxzd*dFtv( 3,1) &
+        &        + hhxxd*dFtv( 1,1) + hhxyd*dFtv( 2,1) + hhxzd*dFtv( 3,1) &
+        &        + Ftvxu*dhd(1,1,1) + Ftvyu*dhd(1,2,1) + Ftvzu*dhd(1,3,1) &
+        &        + Ftvxu*dhd(1,1,1) + Ftvyu*dhd(1,2,1) + Ftvzu*dhd(1,3,1)
+        dhFtv(2) = hhxxd*dFtv( 1,2) + hhxyd*dFtv( 2,2) + hhxzd*dFtv( 3,2) &
+        &        + hhyxd*dFtv( 1,1) + hhyyd*dFtv( 2,1) + hhyzd*dFtv( 3,1) &
+        &        + Ftvxu*dhd(1,1,2) + Ftvyu*dhd(1,2,2) + Ftvzu*dhd(1,3,2) &
+        &        + Ftvxu*dhd(2,1,1) + Ftvyu*dhd(2,2,1) + Ftvzu*dhd(2,3,1)
+        dhFtv(3) = hhxxd*dFtv( 1,3) + hhxyd*dFtv( 2,3) + hhxzd*dFtv( 3,3) &
+        &        + hhzxd*dFtv( 1,1) + hhzyd*dFtv( 2,1) + hhzzd*dFtv( 3,1) &
+        &        + Ftvxu*dhd(1,1,3) + Ftvyu*dhd(1,2,3) + Ftvzu*dhd(1,3,3) &
+        &        + Ftvxu*dhd(3,1,1) + Ftvyu*dhd(3,2,1) + Ftvzu*dhd(3,3,1)
+        dhFtv(4) = hhyxd*dFtv( 1,2) + hhyyd*dFtv( 2,2) + hhyzd*dFtv( 3,2) &
+        &        + hhyxd*dFtv( 1,2) + hhyyd*dFtv( 2,2) + hhyzd*dFtv( 3,2) &
+        &        + Ftvxu*dhd(2,1,2) + Ftvyu*dhd(2,2,2) + Ftvzu*dhd(2,3,2) &
+        &        + Ftvxu*dhd(2,1,2) + Ftvyu*dhd(2,2,2) + Ftvzu*dhd(2,3,2)
+        dhFtv(5) = hhyxd*dFtv( 1,3) + hhyyd*dFtv( 2,3) + hhyzd*dFtv( 3,3) &
+        &        + hhzxd*dFtv( 1,2) + hhzyd*dFtv( 2,2) + hhzzd*dFtv( 3,2) &
+        &        + Ftvxu*dhd(2,1,3) + Ftvyu*dhd(2,2,3) + Ftvzu*dhd(2,3,3) &
+        &        + Ftvxu*dhd(3,1,2) + Ftvyu*dhd(3,2,2) + Ftvzu*dhd(3,3,2)
+        dhFtv(6) = hhzxd*dFtv( 1,3) + hhzyd*dFtv( 2,3) + hhzzd*dFtv( 3,3) &
+        &        + hhzxd*dFtv( 1,3) + hhzyd*dFtv( 2,3) + hhzzd*dFtv( 3,3) &
+        &        + Ftvxu*dhd(3,1,3) + Ftvyu*dhd(3,2,3) + Ftvzu*dhd(3,3,3) &
+        &        + Ftvxu*dhd(3,1,3) + Ftvyu*dhd(3,2,3) + Ftvzu*dhd(3,3,3)
+!
+        Fcrid(1) = Ftvxu*crid11 + Ftvyu*crid21 + Ftvzu*crid31
+        Fcrid(2) = Ftvxu*crid12 + Ftvyu*crid22 + Ftvzu*crid32
+        Fcrid(3) = Ftvxu*crid13 + Ftvyu*crid23 + Ftvzu*crid33
+        Fcrid(4) = Ftvxu*crid14 + Ftvyu*crid24 + Ftvzu*crid34
+        Fcrid(5) = Ftvxu*crid15 + Ftvyu*crid25 + Ftvzu*crid35
+        Fcrid(6) = Ftvxu*crid16 + Ftvyu*crid26 + Ftvzu*crid36
+!
+! --- Ricci tensor R_ab and RNL_ab.
+!
+        rabnl(irg,itg,ipg,1) = - 0.5d0*(dhdh(1) + hd2h(1)) &
+        &                      - dckkx(1) + clxxckkl - ckxlclxk &
+        &                      - 0.5*dhFtv(1) + Fcrid(1)
+        rabnl(irg,itg,ipg,2) = - 0.5d0*(dhdh(2) + hd2h(2)) &
+        &                      - dckky(1) + clxyckkl - ckxlclyk &
+        &                      - 0.5*dhFtv(2) + Fcrid(2)
+        rabnl(irg,itg,ipg,3) = - 0.5d0*(dhdh(3) + hd2h(3)) &
+        &                      - dckkz(1) + clxzckkl - ckxlclzk &
+        &                      - 0.5*dhFtv(3) + Fcrid(3)
+        rabnl(irg,itg,ipg,4) = - 0.5d0*(dhdh(4) + hd2h(4)) &
+        &                      - dckky(2) + clyyckkl - ckylclyk &
+        &                      - 0.5*dhFtv(4) + Fcrid(4)
+        rabnl(irg,itg,ipg,5) = - 0.5d0*(dhdh(5) + hd2h(5)) &
+        &                      - dckkz(2) + clyzckkl - ckylclzk &
+        &                      - 0.5*dhFtv(5) + Fcrid(5)
+        rabnl(irg,itg,ipg,6) = - 0.5d0*(dhdh(6) + hd2h(6)) &
+        &                      - dckkz(3) + clzzckkl - ckzlclzk &
+        &                      - 0.5*dhFtv(6) + Fcrid(6)
+!
+        rabDF(irg,itg,ipg,1:6) = - 0.5d0*fdFtv(1:6)
+!
+        rab(irg,itg,ipg,1:6) = - 0.5d0*delhab(1:6)      &
+        &                      + rabDF(irg,itg,ipg,1:6) &
+        &                      + rabnl(irg,itg,ipg,1:6)
+!
+!if (itg == ntg/2-2 .and. ipg == 2)then
+!    write(16,'(1p,12e20.12)') hrg(irg), Ftvz(irg,itg,ipg), &
+!    &                         dhu(3,1,1)+dhu(3,2,2)+dhu(3,3,3)
+!end if
+!if (irg == 2.and.itg == ntg/2-2 .and. ipg == 2)then
+!  write(6,'(1p,12e20.12)') hvec_xg(irg,itg,ipg,1), hvec_xg(irg,itg,ipg,2), &
+!  &                        hvec_xg(irg,itg,ipg,3)
+!  write(6,'(1p,12e20.12)') Fcrid(1), Fcrid(2), Fcrid(3)
+!  write(6,'(1p,12e20.12)') Fcrid(4), Fcrid(5), Fcrid(6)
+!  write(6,'(1p,12e20.12)') dhFtv(1), dhFtv(2), dhFtv(3)
+!  write(6,'(1p,12e20.12)') dhFtv(4), dhFtv(5), dhFtv(6)
+!  write(6,'(1p,12e20.12)') ckxlclxk,ckxlclyk,ckxlclzk
+!  write(6,'(1p,12e20.12)') ckylclyk,ckylclzk,ckzlclzk
+!do ia = 1, 6
+!  write(6,'(1p,12e20.12)') - 0.5d0*delhab(ia), - 0.5d0*fdFtv(ia), &
+!  &                        + rabnl(irg,itg,ipg,ia)
+!end do
+!end if
+!
+      end do
+    end do
+  end do
+!
+!close(16)
+!
+end subroutine riccitensor_midpoint

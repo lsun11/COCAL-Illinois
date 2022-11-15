@@ -1,0 +1,2 @@
+To check file size of each file in the code directory at once, 
+use "du -b */* */*/*" in the directory.  

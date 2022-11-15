@@ -1,0 +1,10 @@
+For debugging the code, or extracting data from files, 
+it is convenient to use unix command 'grep' command.  
+
+e.g.To extract data
+
+cat ../32_seq_CF_*/gnb_parameter.dat | grep 'Omega M\|ADM-\|Solution'
+cat ../32_seq_CF_*/gnb_parameter.dat | grep 'Omega M\|J/M\^2\|Solution'
+
+e.g. Find a file including a characters
+grep -e "char" -H file_name

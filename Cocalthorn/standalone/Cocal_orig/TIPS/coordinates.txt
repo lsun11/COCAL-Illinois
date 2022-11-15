@@ -1,0 +1,33 @@
+rg, thg, phig : Standard spherical coordinates for the field
+                defined and calculated in coordinate_grav_r, _th, _phi
+
+rgex, thgex, phigex : Extended spherical coordinates for the field
+                defined and calculated in coordinate_grav_extended
+
+rgex_itp, thgex_itp, phigex_itp : Storage of extended spherical coordinates 
+                for interpolation from the other patch.  
+                defined in coordinate_grav_extended_interpo
+
+multi-patches are: 
+1st patch centered at a BH/NS and excised around a 2nd object. 
+2nd patch centered at a BH/NS and excised around a 1st object. 
+3rd patch centered at the center of mass of 1st and 2nd objects.
+
+rb, thb, phib : Coordinates of the grid points for a binary patch 
+                in the spheircal coordinates centerd at the excised sphere. 
+                1st patch seen from the center of 2nd patch.
+                2nd patch seen from the center of 1st patch. (not rotated)
+                defined and calcualted in grid_points_binary_excision
+
+ra, tha, phia : Coordinates of the grid points for the asymptotic patch 
+                in the spherical coordinate centered at the binary patch.
+                3rd patch seen from the center of 1st patch
+                3rd patch seen from the center of 2nd patch (rotated)
+                defined and calcualted in grid_points_asymptotic_patch
+
+rb_a, thb_a, phib_a : Coordinates of the grid points for a binary patch 
+                in the spheircal coordinates centerd at the asymptotic patch.
+                3rd patch seen from the center of 1st patch. 
+                3rd patch seen from the center of 2nd patch. (rotated)
+                defined and calcualted in grid_points_binary_in_asympto
+

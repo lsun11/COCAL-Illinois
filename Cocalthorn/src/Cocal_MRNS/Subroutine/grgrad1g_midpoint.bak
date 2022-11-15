@@ -1,0 +1,45 @@
+subroutine grgrad1g_midpoint(fnc,grad1,irg,itg,ipg)
+  use coordinate_grav_r, only : hrginv, drginv
+  use coordinate_grav_theta, only : dthginv
+  use coordinate_grav_phi, only : dphiginv
+  use trigonometry_grav_theta, only : hsinthg, hcosthg, hcosecthg
+  use trigonometry_grav_phi, only : hsinphig, hcosphig
+  use make_array_3d
+  implicit none
+!
+  real(8), pointer :: fnc(:,:,:)
+  real(8) :: grad1(3)
+  real(8) :: gr1, gr2, gr3, dfncdr, dfncdth, dfncdphi
+  integer :: irg, itg, ipg
+!
+  dfncdr = 0.25d0 &
+   &     *(fnc(irg,itg  ,ipg  ) - fnc(irg-1,itg  ,ipg  ) &
+   &     + fnc(irg,itg-1,ipg  ) - fnc(irg-1,itg-1,ipg  ) &
+   &     + fnc(irg,itg  ,ipg-1) - fnc(irg-1,itg  ,ipg-1) &
+   &     + fnc(irg,itg-1,ipg-1) - fnc(irg-1,itg-1,ipg-1))*drginv(irg)
+  dfncdth = 0.25d0 &
+   &     *(fnc(irg  ,itg,ipg  ) - fnc(irg  ,itg-1,ipg  ) &
+   &     + fnc(irg-1,itg,ipg  ) - fnc(irg-1,itg-1,ipg  ) &
+   &     + fnc(irg  ,itg,ipg-1) - fnc(irg  ,itg-1,ipg-1) &
+   &     + fnc(irg-1,itg,ipg-1) - fnc(irg-1,itg-1,ipg-1))*dthginv
+  dfncdphi = 0.25d0  &
+   &     *(fnc(irg  ,itg  ,ipg) - fnc(irg  ,itg  ,ipg-1) &
+   &     + fnc(irg-1,itg  ,ipg) - fnc(irg-1,itg  ,ipg-1) &
+   &     + fnc(irg  ,itg-1,ipg) - fnc(irg  ,itg-1,ipg-1) &
+   &     + fnc(irg-1,itg-1,ipg) - fnc(irg-1,itg-1,ipg-1))*dphiginv
+!
+! --- To cartesian component.
+!
+  gr1  = dfncdr
+  gr2  = dfncdth*hrginv(irg)
+  gr3  = dfncdphi*hrginv(irg)*hcosecthg(itg)
+  grad1(1) = gr1 * hsinthg(itg) * hcosphig(ipg) &
+         & + gr2 * hcosthg(itg) * hcosphig(ipg) &
+         & - gr3 * hsinphig(ipg)
+  grad1(2) = gr1 * hsinthg(itg) * hsinphig(ipg) &
+         & + gr2 * hcosthg(itg) * hsinphig(ipg) &
+         & + gr3 * hcosphig(ipg)
+  grad1(3) = gr1 * hcosthg(itg)  &
+         & - gr2 * hsinthg(itg)
+!
+end subroutine grgrad1g_midpoint

@@ -1,0 +1,48 @@
+# Parameter definitions for thorn Cocal
+
+
+
+shares: ADMBase
+EXTENDS keyword initial_data
+{
+  "CocalBNS" :: "Binary Neutron Star Initial data in Cocal format"
+}
+
+EXTENDS keyword initial_lapse
+{
+  "CocalBNS" :: "Binary Neutron Star Initial data in Cocal format"
+}
+
+EXTENDS keyword initial_shift
+{
+  "CocalBNS" :: "Binary Neutron Star Initial data in Cocal format"
+}
+
+shares: HydroBase
+
+EXTENDS keyword initial_hydro
+{
+  "CocalBNS" :: "Binary Neutron Star Initial data in Cocal format"
+}
+
+EXTENDS keyword initial_temperature
+{
+  "CocalBNS" :: "Binary Neutron Star Initial data in Cocal format"
+}
+
+EXTENDS keyword initial_Y_e
+{
+  "CocalBNS" :: "Binary Neutron Star Initial data in Cocal format"
+}
+
+shares: IO
+USES CCTK_STRING out_dir
+
+private:
+
+CCTK_STRING dir_path_BNS_ID "Path to Cocal BNS initial data"
+{
+  ".+" :: "Pathname"
+} "."
+
+

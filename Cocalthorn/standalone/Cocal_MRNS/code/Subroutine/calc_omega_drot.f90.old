@@ -1,0 +1,91 @@
+!-- for differentially rotating case
+!-- iteratively computing Omega pointwise
+!
+!===== this subroutine has a problem when Omg=0
+!
+! [in] Rcyl, alpha, psic, bxshift, byshift, Omgfluid
+! [out]Omgfluid, JOmg, JOmg_intg
+!
+subroutine calc_omega_drot(Rcyl,alpha,psic,bxshift,byshift&
+     & ,Omgfluid,JOmg,JOmg_intg)
+!use def_vector_x
+use def_matter_parameter
+implicit none
+!
+real(long), intent(in):: Rcyl, alpha, psic, bxshift, byshift
+! Rcyl: cylindrical R, alpha: lapse, psic: conformal factor, 
+! womega: dragging omega
+real(long), intent(inout):: Omgfluid
+real(long), intent(out):: jOmg, JOmg_intg
+! -- JOmg: functional of Omega (specific angular momentum in Newtonian)
+! -- JOmg_int: integration of JOmg w.r.t. Omega
+!
+real(long) vel, dvel, womega
+! vel: velocity, dvel: d(vel)/d(Omega), womega: dragging omega
+real(long) Fnc, dFnc
+! L.H.S. of nonlinear equation defining Omega and its derivative
+!
+real(long) err, rlx, bcyl
+real(long), parameter :: tol_omg = 1.00d-8
+real(long), parameter :: epssmall = 1.00d-3
+!-------------------------------------------------------------
+!
+!! computing dragging womega
+if(Rcyl==0.00d0) then
+   womega = 0.000d0
+else
+   womega = sqrt(bxshift**2+byshift**2)/Rcyl
+endif
+!!
+!
+bcyl = (psic**2/alpha * Rcyl)**2
+!
+IF(bcyl<epssmall)then ! if the point is very close to the axis
+                      ! use a regular expansion
+   Omgfluid = ome - (ome-womega)/(index_DR*A2DR) * bcyl
+                      ! first order expansion in b
+!
+ELSE
+!
+   DO
+   dvel = (psic**2/alpha)*Rcyl
+   vel = (Omgfluid-womega)*dvel
+!
+   Fnc = A2DR * Omgfluid*(Omgfluid-womega)&
+        &   *( (ome/Omgfluid)**index_DR - 1.00d0 )&
+        & + 1.0d0 + 1.00d0/(vel**2-1.00d0)
+
+   dFnc = A2DR*( (2.00d0*Omgfluid-womega)&
+                    *( (ome/Omgfluid)**index_DR - 1.00d0 )&
+                -index_DR*(Omgfluid-womega)*(ome/Omgfluid)**index_DR )&
+        & -2.00d0*vel*dvel/(vel**2-1.00d0)**2
+!
+   err = abs(-Fnc/dFnc/Omgfluid)
+   if(err<tol_omg)exit
+!
+   rlx = 1.00d0 ! relaxation factor
+   if(err>1.0d0)rlx = 1.0d-1
+!
+   Omgfluid = Omgfluid + rlx*(- Fnc/dFnc)
+!
+   ENDDO
+ENDIF
+
+!--- computing JOmg and JOmg_intg
+  JOmg = A2DR*Omgfluid*( (ome/Omgfluid)**index_DR - 1.00d0 )
+!
+  If (index_DR==2.00d0) then ! "v-const."-law
+     JOmg_intg = A2DR * ( ome**index_DR * log(abs(Omgfluid))&
+          &   -5.00d-1*A2DR*Omgfluid**2&
+          & - ome**index_DR * log(abs(ome))&
+          &   +5.00d-1*A2DR*ome**2 )
+  Else
+     JOmg_intg = A2DR * ( ome**index_DR * Omgfluid**(2.00d0-index_DR)&
+          &                  /(2.00d0-index_DR)&
+          &              -5.00d-1*Omgfluid**2&
+          &              -index_DR*ome**2/(4.00d0-2.00d0*index_DR) )
+  EndIf
+!
+
+end subroutine calc_omega_drot
+

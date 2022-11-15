@@ -1,0 +1,49 @@
+subroutine test_current
+  use phys_constant, only : long, pi
+  use grid_parameter, only : nrg, ntg, npg
+  use def_emfield, only : jtu, jxu, jyu, jzu
+  use def_vector_x, only : vec_xg
+  use def_vector_phi, only : vec_phig
+  use trigonometry_grav_phi, only : sinphig, cosphig
+  implicit none
+  real(long) :: ome_cur, dis_cur, sigma, charge, small = 1.0d-20
+  real(long) :: xx, yy, zz, phix, phiy, phiz
+  real(long) :: rminusR, factor, rrRR, angle
+  integer :: irg, itg, ipg
+!
+! --- Source for Maxwell eq normal component
+! --  current term
+!
+  ome_cur = 0.3d0
+  dis_cur = 0.5d0
+  sigma   = 0.3d0
+  charge  = 0.003d0
+!
+  do ipg = 0, npg
+    do itg = 0, ntg
+      do irg = 0, nrg
+!
+        xx = vec_xg(irg,itg,ipg,1)
+        yy = vec_xg(irg,itg,ipg,2)
+        zz = vec_xg(irg,itg,ipg,3)
+        phix = vec_phig(irg,itg,ipg,1)
+        phiy = vec_phig(irg,itg,ipg,2)
+        phiz = vec_phig(irg,itg,ipg,3)
+!
+        rminusR  = (xx-dis_cur*cosphig(ipg))**2 &
+        &        + (yy-dis_cur*sinphig(ipg))**2 + zz**2
+        rrRR = sqrt(rminusR + small)
+        angle = dacos(zz/rrRR)
+        factor = charge/(sqrt(2.0d0*pi)*sigma)**2 &
+        &      * exp(-rminusR /(2.0d0*sigma**2))
+! 
+        jtu(irg,itg,ipg) = factor
+        jxu(irg,itg,ipg) = factor*ome_cur*dcos(angle)*cosphig(ipg)
+        jyu(irg,itg,ipg) = factor*ome_cur*dcos(angle)*sinphig(ipg)
+        jzu(irg,itg,ipg) = factor*ome_cur*(-dsin(angle))
+!
+      end do
+    end do
+  end do
+!
+end subroutine test_current

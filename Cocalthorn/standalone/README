@@ -1,0 +1,64 @@
+"Cocal_orig" is the directory that comes from the standalone code and 
+***SHOULD NOT*** be modified.
+
+==> Every time a new version of COCAL comes out we put it in the 
+    directory "COCAL_ILLINOIS/Cocalthorn/standalone" as "Cocal_orig". 
+    
+    The script "cidar_create_BHT_WL.sh" should work on the "Cocal_orig" directory
+    and produce the "Cocal_BHT" directory which will be used for the BHT reader.
+    
+    The script "cidar_create_BNS_CF.sh" should work on the "Cocal_orig" directory
+    and produce the "Cocal_BNS" directory which will be used for the BNS reader.
+    
+    The script "cidar_create_RNS_CF.sh" should work on the "Cocal_orig" directory
+    and produce the "Cocal_RNS" directory which will be used for the RNS reader.
+
+
+==> Script "cidar_standalone_test.sh" works on the "Cocal_orig" directory to 
+    test any reader.
+
+
+To compile and prepare the COCAL library necessary for interpolating 
+COCAL initial data onto the Illinois code grids: 
+
+Run the appropriate "cidar_create_*.sh" and change the path_to_src
+and path_to_lib shell variables to the corresponding paths to 
+Cocalthorn/src and your desired directory where the cocal library
+will be placed. 
+
+Note: the parent directory of the directory containing this README file
+should be the one containing the Cocalthorn/src directory. This should
+make it easy for you to set the path_to_src variable.
+
+
+#######################################################################
+Cocal variables:
+
+rho  : rest mass density
+ene  : energy density
+pre  : pressure
+h    : specific enthalpy
+emd  : Emden function P/rho (exported in COCAL ID)
+vep  : velocity potential   (exported in COCAL ID)
+rs   : neutron star surface (exported in COCAL ID)
+
+psi  : conformal factor     (exported in COCAL ID)
+alph : lapse function       (exported in COCAL ID) --> alphca 
+bvxd : x-component of shift (exported in COCAL ID) -->  
+bvyd : y-component of shift (exported in COCAL ID)
+bvzd : z-component of shift (exported in COCAL ID)
+
+Files for Irrotational BNS Initial Data:
+3-d data files:
+bnsflu_3D_mpt1.las  => COCP-1 : emd, vep
+bnsflu_3D_mpt2.las  => COCP-2 : emd, vep
+bnsgra_3D_mpt1.las  => COCP-1 : psi, alph, bvxd, bvyd, bvzd 
+bnsgra_3D_mpt2.las  => COCP-2 : psi, alph, bvxd, bvyd, bvzd 
+bnsgra_3D_mpt3.las  => ARCP   : psi, alph, bvxd, bvyd, bvzd 
+2-d data files:
+bnssur_3D_mpt1.las  => COCP-1 : rs
+bnssur_3D_mpt2.las  => COCP-2 : rs
+Also exported are three real numbers
+ome  : orbital angular velocity
+ber  : Constant of Euler integral
+radi : Max radius of neutron star
