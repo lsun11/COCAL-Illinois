@@ -1,0 +1,42 @@
+Cactus Code Thorn Cocal
+Author(s)    : Antonios Tsokaros
+Maintainer(s): Antonios Tsokaros
+Licence      : private
+--------------------------------------------------------------------------
+
+1. Purpose
+
+Generate NS and BNS initial data.
+
+
+2. How to use with Cactus:
+
+ -- Make sure to activate the thorn Cocal. Add Cocal to your parfile as 
+follows: 
+
+    ActiveThorns = "Cocal"
+
+  -- You need to set the following parameters for the initial data in the 
+Cactus par file:
+
+    ADMBase::initial_data      = "CocalBNS"
+    ADMBase::initial_dtlapse   = "zero"
+    ADMBase::initial_dtshift   = "zero"
+    ADMBase::initial_lapse     = "CocalBNS"
+    ADMBase::initial_shift     = "zero"
+    HydroBase::initial_hydro   = "CocalBNS"
+    HydroBase::initial_Y_e     = "one"
+    HydroBase::initial_temperature = "zero"
+    HydroBase::initial_entropy  = "zero
+
+  -- The path to the initial data directory:
+
+    Cocal::dir_path_BNS_ID  = "/path/to/initial/data/directory"
+
+
+  -- And the location of the EOS used in the pizza format. For example:
+
+    PizzaIDBase::eos_file      = "/home/astro/shared/projekt/initial_data/G2_I1p455vs1p455_D7R33_44p7km/EOS_IGBNS1.pizza"
+
+3. Compile Cactus with Cocal thorn included in your thornlist, and run with the modified parameter file.
+  

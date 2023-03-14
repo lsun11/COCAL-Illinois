@@ -1,0 +1,16 @@
+# Schedule definitions for thorn Cocal
+
+if (CCTK_Equals(initial_data, "CocalBNS"))
+{
+#  SCHEDULE Cocal_ParamCheck AT PARAMCHECK
+#  {
+#    LANG: C
+#  } "Check parameters and thorn needs"
+
+  SCHEDULE coc2cac_ini_sub IN HydroBase_Initial
+  {
+    LANG: FORTRAN
+    #STORAGE: bla
+  } "Read binary neutron star initial data"
+} 
+

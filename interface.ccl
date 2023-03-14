@@ -1,0 +1,5 @@
+# Interface definition for thorn Cocal
+implements: Cocal
+inherits: ADMBase Grid HydroBase
+
+
